@@ -4,12 +4,20 @@ import pytesseract
 from PIL import Image
 import cv2
 import numpy as np
+import argparse
 from proxy_hunter import write_file
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from src.database.VoucherDatabase import extract_voucher_codes, get_database_instance, safe_print, store_voucher_in_database
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+from src.database.VoucherDatabase import (
+    extract_voucher_codes,
+    get_database_instance,
+    safe_print,
+    store_voucher_in_database,
+)
 from src.utils.file import get_relative_path
 from src.ocr.image_utils import dewarp_image
+
 
 def preprocess_image_for_ocr(image_path: str) -> Image.Image:
     """
@@ -30,7 +38,7 @@ def preprocess_image_for_ocr(image_path: str) -> Image.Image:
     gray = cv2.equalizeHist(gray)
 
     # Sharpen image
-    kernel = np.array([[0, -1, 0], [-1, 5,-1], [0, -1, 0]])
+    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
     sharp = cv2.filter2D(gray, -1, kernel)
 
     # Try Otsu's thresholding
@@ -42,6 +50,7 @@ def preprocess_image_for_ocr(image_path: str) -> Image.Image:
     # Convert back to PIL Image
     pil_img = Image.fromarray(denoised)
     return pil_img
+
 
 def focus_extract_text_from_image(image_path: str) -> str:
     """
@@ -72,15 +81,28 @@ def focus_extract_text_from_image(image_path: str) -> str:
         crop_path = get_relative_path("tmp/split", f"{name}.png")
         os.makedirs(os.path.dirname(crop_path), exist_ok=True)
         crop_img.save(crop_path)
-        text = pytesseract.image_to_string(crop_img, lang="eng", config="--psm 3 --oem 1")
+        text = pytesseract.image_to_string(
+            crop_img, lang="eng", config="--psm 3 --oem 1"
+        )
         if text:
             all_text.append(text)
-            write_file(crop_path.replace('.png', '.txt'), text)
+            write_file(crop_path.replace(".png", ".txt"), text)
 
     return "\n".join(all_text)
 
+
 if __name__ == "__main__":
-    voucher_path = get_relative_path("test/fixtures/voucher - normalized rotation.jpeg")
+    parser = argparse.ArgumentParser(
+        description="Extract text from voucher images using OCR"
+    )
+    parser.add_argument(
+        "-f",
+        "--file",
+        default=get_relative_path("test/fixtures/voucher - normalized rotation.jpeg"),
+        help="Path to the voucher image file (default: test/fixtures/voucher - normalized rotation.jpeg)",
+    )
+    args = parser.parse_args()
+    voucher_path = args.file
     extract = focus_extract_text_from_image(voucher_path)
     result = extract_voucher_codes(extract)
     try:

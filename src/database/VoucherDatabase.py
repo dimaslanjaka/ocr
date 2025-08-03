@@ -3,13 +3,22 @@ import os
 import re
 from .SQLiteHelper import SQLiteHelper
 
+# Banned voucher codes (normalized, no spaces)
+BANNED_VOUCHERS = {
+    '1234123412341234'
+}
+
 def extract_voucher_codes(text: str) -> list:
     """Extract voucher codes from the given text."""
     # Simple regex to find alphanumeric codes, adjust as needed for your voucher format
     regex = r'\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b'
     codes = re.findall(regex, text)
-    # Normalize: remove all spaces, ensure 16 digits
-    normalized_codes = [re.sub(r'\s+', '', code) for code in codes if len(re.sub(r'\s+', '', code)) == 16]
+    # Normalize: remove all spaces, ensure 16 digits, skip banned vouchers
+    normalized_codes = [
+        re.sub(r'\s+', '', code)
+        for code in codes
+        if len(re.sub(r'\s+', '', code)) == 16 and re.sub(r'\s+', '', code) not in BANNED_VOUCHERS
+    ]
     return normalized_codes
 
 def safe_print(message, file=sys.stderr):
@@ -79,6 +88,9 @@ def store_voucher_in_database(db_helper: SQLiteHelper, voucher_code: str, image_
         normalized_code = re.sub(r'\s+', '', voucher_code)
         if len(normalized_code) != 16:
             safe_print(f"⚠️\tVoucher code '{voucher_code}' is not 16 digits after normalization, skipping")
+            return
+        if normalized_code in BANNED_VOUCHERS:
+            safe_print(f"⛔\tVoucher code '{normalized_code}' is banned, skipping")
             return
 
         db_helper.create_table('vouchers', [

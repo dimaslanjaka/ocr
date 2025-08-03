@@ -44,10 +44,7 @@ if exist "%VENV_SCRIPTS%\python.exe" (
     )
 )
 
-REM Activate the virtual environment
-call "%VENV_SCRIPTS%\activate.bat"
-
-REM Run python with all forwarded arguments
-call python %*
+REM Run python from the virtual environment with all forwarded arguments
+"%VENV_SCRIPTS%\python.exe" %*
 
 endlocal

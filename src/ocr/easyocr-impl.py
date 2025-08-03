@@ -76,7 +76,7 @@ def main(voucher_path):
 
     # Split image into quarters
     safe_print("✂️\tSplitting image into quarters...")
-    original_img, quarters = split_image(voucher_path)
+    original_img, quarters, _ = split_image(voucher_path)
 
     if original_img is None:
         return

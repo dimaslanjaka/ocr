@@ -4,19 +4,23 @@
   "dependencies": {
     "axios": "^1.11.0",
     "cloudflared": "^0.7.1",
+    "crypto-js": "^4.2.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "fs-extra": "^11.3.0",
     "jsonc-parser": "^3.3.1",
     "multer": "^2.0.2",
     "node-tesseract-ocr": "^2.2.1",
     "sharp": "^0.34.3",
     "tesseract.js": "^6.0.1",
+    "upath": "^2.0.1",
     "uuid": "9"
   },
-  "packageManager": "yarn@4.9.2+sha512.1fc009bc09d13cfd0e19efa44cbfc2b9cf6ca61482725eb35bbc5e257e093ebf4130db6dfe15d604ff4b79efd8e1e8e99b25fa7d0a6197c9f9826358d4d65c3c",
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.32.0",
+    "@types/crypto-js": "^4",
+    "@types/fs-extra": "^11",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
     "binary-collections": "^2.0.9",
@@ -29,5 +33,6 @@
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "packageManager": "yarn@4.9.2"
 }

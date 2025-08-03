@@ -102,6 +102,7 @@ class SQLiteHelper:
             db_path (str): The file path to the SQLite database.
         """
         self.db_path = db_path
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
         # Connect database
         sqlite3.connect(db_path, check_same_thread=check_same_thread)
         # Wrap custom class

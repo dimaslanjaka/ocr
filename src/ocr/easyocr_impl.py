@@ -10,8 +10,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from src.utils.file import get_relative_path
-from src.database.SQLiteHelper import SQLiteHelper
-from src.database.VoucherDatabase import store_voucher_in_database, safe_print, extract_voucher_codes
+from src.database.VoucherDatabase import get_database_instance, store_voucher_in_database, safe_print, extract_voucher_codes
 from src.ocr.image_utils import split_image
 
 # Suppress PyTorch DataLoader warnings about pin_memory
@@ -125,7 +124,7 @@ def main(voucher_path):
     # Initialize database
     safe_print("🗃️\tInitializing database...")
     try:
-        db_helper = SQLiteHelper("tmp/voucher_database.sqlite")
+        db_helper = get_database_instance()
         safe_print("✅\tDatabase initialized successfully")
     except Exception as e:
         safe_print(f"❌\tError initializing database: {str(e)}")

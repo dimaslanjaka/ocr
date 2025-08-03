@@ -4,6 +4,13 @@ import re
 from typing import List
 from .SQLiteHelper import SQLiteHelper
 
+def get_database_instance(db_path: str = "tmp/voucher_database.sqlite") -> SQLiteHelper:
+    """Get or create a singleton instance of the SQLiteHelper for the voucher database."""
+    if not hasattr(get_database_instance, "_instance") or get_database_instance._db_path != db_path:
+        get_database_instance._instance = SQLiteHelper(db_path)
+        get_database_instance._db_path = db_path
+    return get_database_instance._instance
+
 # Banned voucher codes (normalized, no spaces)
 BANNED_VOUCHERS = {
     '1234123412341234'

@@ -7,8 +7,7 @@ import numpy as np
 from proxy_hunter import write_file
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from src.database.VoucherDatabase import extract_voucher_codes, safe_print, store_voucher_in_database
-from src.database.SQLiteHelper import SQLiteHelper
+from src.database.VoucherDatabase import extract_voucher_codes, get_database_instance, safe_print, store_voucher_in_database
 from src.utils.file import get_relative_path
 from src.ocr.image_utils import dewarp_image
 
@@ -81,11 +80,11 @@ def focus_extract_text_from_image(image_path: str) -> str:
     return "\n".join(all_text)
 
 if __name__ == "__main__":
-    voucher_path = "test/fixtures/voucher - normalized rotation.jpeg"
+    voucher_path = get_relative_path("test/fixtures/voucher - normalized rotation.jpeg")
     extract = focus_extract_text_from_image(voucher_path)
     result = extract_voucher_codes(extract)
     try:
-        db_helper = SQLiteHelper("tmp/voucher_database.sqlite")
+        db_helper = get_database_instance()
         safe_print("✅\tDatabase initialized successfully")
     except Exception as e:
         safe_print(f"❌\tError initializing database: {str(e)}")

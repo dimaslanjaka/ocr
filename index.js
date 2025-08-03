@@ -1,11 +1,11 @@
 import 'dotenv/config';
 import express from 'express';
-import tesseract from 'node-tesseract-ocr';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import { bin, install } from 'cloudflared';
+import { recognizeImage } from './src/tesseract.js';
 
 const app = express();
 
@@ -133,9 +133,7 @@ app.get('/url', async (req, res) => {
   console.log(imageUrl);
 
   try {
-    // Use Tesseract to recognize text from the image
-    tesseract
-      .recognize(imageUrl, config)
+    recognizeImage(imageUrl, config)
       .then((text) => {
         console.log('OCR Result:', text);
         res.send(text);
@@ -160,9 +158,7 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     const imagePath = req.file.path;
     console.log('Processing uploaded file:', imagePath);
 
-    // Use Tesseract to recognize text from the uploaded image
-    tesseract
-      .recognize(imagePath, config)
+    recognizeImage(imagePath, config)
       .then((text) => {
         console.log('OCR Result:', text);
 

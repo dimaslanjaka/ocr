@@ -79,9 +79,29 @@
                     </div>
                 </blockquote>
 
+                <!-- Camera Controls -->
+                <div class="space-y-3 mb-4">
+                    <div class="flex gap-2">
+                        <select id="cameraSelect" class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2">
+                            <option value="">Select Camera</option>
+                        </select>
+                        <button id="refreshCameras" class="px-3 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="orientationPortrait" class="flex-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors">
+                            <i class="fas fa-mobile-alt mr-1"></i>Portrait
+                        </button>
+                        <button id="orientationLandscape" class="flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors">
+                            <i class="fas fa-tablet-alt mr-1"></i>Landscape
+                        </button>
+                    </div>
+                </div>
+
                 <div class="space-y-4">
                     <div class="relative">
-                        <video id="cameraVideo" class="w-full h-48 bg-gray-200 rounded-lg hidden" autoplay playsinline></video>
+                        <video id="cameraVideo" class="w-full h-48 bg-gray-200 rounded-lg hidden object-cover" autoplay playsinline></video>
                         <canvas id="cameraCanvas" class="hidden"></canvas>
                         <div id="cameraPlaceholder" class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
                             <div class="text-center">
@@ -132,6 +152,8 @@
         let cameraStream = null;
         let cameraVideo = null;
         let cameraCanvas = null;
+        let currentOrientation = 'portrait';
+        let availableCameras = [];
 
         // Initialize camera elements
         document.addEventListener('DOMContentLoaded', function() {
@@ -142,17 +164,95 @@
             document.getElementById('startCamera').addEventListener('click', startCamera);
             document.getElementById('captureImage').addEventListener('click', captureImage);
             document.getElementById('stopCamera').addEventListener('click', stopCamera);
+            document.getElementById('refreshCameras').addEventListener('click', getCameraDevices);
+            document.getElementById('orientationPortrait').addEventListener('click', () => setOrientation('portrait'));
+            document.getElementById('orientationLandscape').addEventListener('click', () => setOrientation('landscape'));
+
+            // Initialize camera devices
+            getCameraDevices();
         });
+
+        async function getCameraDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                availableCameras = devices.filter(device => device.kind === 'videoinput');
+
+                const cameraSelect = document.getElementById('cameraSelect');
+                cameraSelect.innerHTML = '<option value="">Select Camera</option>';
+
+                availableCameras.forEach((camera, index) => {
+                    const option = document.createElement('option');
+                    option.value = camera.deviceId;
+                    option.textContent = camera.label || `Camera ${index + 1}`;
+                    cameraSelect.appendChild(option);
+                });
+
+                if (availableCameras.length === 0) {
+                    showError('No cameras found on this device.');
+                }
+            } catch (error) {
+                showError(`Error accessing camera devices: ${error.message}`);
+            }
+        }
+
+        function setOrientation(orientation) {
+            currentOrientation = orientation;
+
+            // Update button styles
+            const portraitBtn = document.getElementById('orientationPortrait');
+            const landscapeBtn = document.getElementById('orientationLandscape');
+
+            if (orientation === 'portrait') {
+                portraitBtn.className = 'flex-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors';
+                landscapeBtn.className = 'flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors';
+            } else {
+                landscapeBtn.className = 'flex-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors';
+                portraitBtn.className = 'flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors';
+            }
+
+            // Update video container height based on orientation
+            updateVideoContainerSize();
+        }
+
+        function updateVideoContainerSize() {
+            const videoElement = document.getElementById('cameraVideo');
+            const placeholder = document.getElementById('cameraPlaceholder');
+
+            if (currentOrientation === 'landscape') {
+                videoElement.className = 'w-full h-64 bg-gray-200 rounded-lg hidden object-cover';
+                placeholder.className = 'w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center';
+            } else {
+                videoElement.className = 'w-full h-48 bg-gray-200 rounded-lg hidden object-cover';
+                placeholder.className = 'w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center';
+            }
+        }
 
         async function startCamera() {
             try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({
+                const cameraSelect = document.getElementById('cameraSelect');
+                const selectedCameraId = cameraSelect.value;
+
+                let constraints = {
                     video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: 'environment' // Use back camera if available
+                        facingMode: selectedCameraId ? undefined : 'environment'
                     }
-                });
+                };
+
+                // Set orientation-specific constraints
+                if (currentOrientation === 'landscape') {
+                    constraints.video.width = { ideal: 1280 };
+                    constraints.video.height = { ideal: 720 };
+                } else {
+                    constraints.video.width = { ideal: 720 };
+                    constraints.video.height = { ideal: 1280 };
+                }
+
+                // Use specific camera if selected
+                if (selectedCameraId) {
+                    constraints.video.deviceId = { exact: selectedCameraId };
+                }
+
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
 
                 cameraVideo.srcObject = cameraStream;
                 cameraVideo.classList.remove('hidden');
@@ -163,9 +263,9 @@
                 document.getElementById('captureImage').disabled = false;
                 document.getElementById('stopCamera').disabled = false;
 
-                showSuccess('Camera started successfully!');
+                showSuccess(`Camera started in ${currentOrientation} mode!`);
             } catch (error) {
-                showError(`Camera error: ${error.message}. Please check camera permissions.`);
+                showError(`Camera error: ${error.message}. Please check camera permissions and try selecting a different camera.`);
             }
         }
 

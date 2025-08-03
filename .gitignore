@@ -14,7 +14,6 @@ yarn.lock
 .pnp.*
 node_modules/
 .idea/
-*.traineddata
 **/tmp
 build/
 dist/

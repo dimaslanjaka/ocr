@@ -15,6 +15,9 @@ set "VENV_DIR=%CWD%\venv"
 set "VENV_PATH=%VENV_DIR%"
 if exist "%CWD%\.venv" (
     set "VENV_PATH=%CWD%\.venv"
+    echo Using .venv folder.
+) else (
+    echo Using venv folder.
 )
 set "VENV_SCRIPTS=%VENV_PATH%\Scripts"
 
@@ -27,6 +30,7 @@ if not exist "%VENV_PATH%" (
         exit /b 1
     )
     echo Virtual environment created.
+    echo Please run "pip install -r requirements.txt" to install dependencies.
 ) else (
     echo Virtual environment already exists.
 )

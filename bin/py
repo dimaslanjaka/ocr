@@ -18,10 +18,16 @@ if [ ! -d "$CWD" ]; then
 fi
 
 # Prefer .venv over venv for virtual environment path
-if [ -d "$CWD/.venv" ] || [ ! -d "$CWD/venv" ]; then
+if [ -d "$CWD/.venv" ]; then
   VENV_PATH="$CWD/.venv"
-else
+  echo "Using .venv folder."
+elif [ -d "$CWD/venv" ]; then
   VENV_PATH="$CWD/venv"
+  echo "Using venv folder."
+else
+  # Default to .venv if neither exists
+  VENV_PATH="$CWD/.venv"
+  echo "No venv found, will create .venv folder."
 fi
 USER="www-data"
 

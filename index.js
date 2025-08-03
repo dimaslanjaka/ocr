@@ -156,20 +156,12 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       const text = await recognizeImage(imagePath, config);
       console.log('OCR Result:', text);
 
-      // Clean up uploaded file after processing
-      await fs.promises.unlink(imagePath);
-
       res.json({
         text: text,
         filename: req.file.originalname
       });
     } catch (error) {
       console.error('OCR Error:', error.message);
-
-      // Clean up uploaded file on error
-      await fs.promises.unlink(imagePath).catch((err) => {
-        if (err) console.error('Error deleting file:', err);
-      });
 
       res.status(500).send('Error processing the image.');
     }

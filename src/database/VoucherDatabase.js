@@ -1,5 +1,16 @@
 import path from 'path';
 
+/**
+ * Extract voucher codes from the given text.
+ * @param {string} text
+ * @returns {string[]}
+ */
+export function extractVoucherCodes(text) {
+  // Simple regex to find alphanumeric codes, adjust as needed for your voucher format
+  const regex = /\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b/g;
+  return text.match(regex) || [];
+}
+
 export function safePrint(message, isError = false) {
   try {
     if (isError) {

@@ -1,6 +1,13 @@
 import sys
 import os
+import re
 from .SQLiteHelper import SQLiteHelper
+
+def extract_voucher_codes(text: str) -> list:
+    """Extract voucher codes from the given text."""
+    # Simple regex to find alphanumeric codes, adjust as needed for your voucher format
+    regex = r'\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b'
+    return re.findall(regex, text)
 
 def safe_print(message, file=sys.stderr):
     """Safely print messages, handling encoding issues"""

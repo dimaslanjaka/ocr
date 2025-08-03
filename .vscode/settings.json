@@ -10,7 +10,7 @@
     "DEBUG_PKG": "1",
     "ESLINT_USE_FLAT_CONFIG": "true",
     "NUITKA_CACHE_DIR": "${workspaceFolder}\\tmp\\nuitka-cache",
-    "PATH": "${env:PATH};${workspaceFolder}\\bin;${workspaceFolder}\\node_modules\\.bin;${workspaceFolder}\\vendor\\bin"
+    "PATH": "${workspaceFolder}\\bin;${workspaceFolder}\\node_modules\\.bin;${workspaceFolder}\\vendor\\bin;${env:PATH}"
   },
   "terminal.integrated.profiles.windows": {
     "Cygwin": {

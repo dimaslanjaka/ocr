@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import { bin, install } from 'cloudflared';
-import { recognizeImage } from './src/tesseract.js';
+import { recognizeImage } from './src/ocr/tesseract.js';
 
 const app = express();
 

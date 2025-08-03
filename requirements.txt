@@ -10,3 +10,4 @@ transformers
 customtkinter
 pillow
 easyocr
+git+https://github.com/dimaslanjaka/php-proxy-hunter.git#subdirectory=packages/proxy-hunter-python

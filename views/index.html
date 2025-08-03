@@ -29,7 +29,7 @@
                 </h2>
                 <form id="uploadForm" class="space-y-4" enctype="multipart/form-data">
                     <div class="flex items-center justify-center w-full">
-                        <label for="imageFile" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-blue-400 transition-colors">
+                        <label for="imageFile" id="dropArea" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-blue-400 transition-colors">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                 <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-4"></i>
                                 <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
@@ -412,6 +412,40 @@
             } else {
                 fileNameDiv.textContent = '';
             }
+        });
+
+        // Drag and drop support for upload area
+        document.addEventListener('DOMContentLoaded', function() {
+            // Drag and drop handlers
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('imageFile');
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropArea.classList.add('border-blue-400', 'bg-blue-50');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropArea.classList.remove('border-blue-400', 'bg-blue-50');
+                });
+            });
+
+            dropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) {
+                    fileInput.files = files;
+                    // Trigger change event to update file name display
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            });
         });
 
         function showLoading() {

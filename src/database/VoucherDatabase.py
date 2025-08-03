@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+from typing import List
 from .SQLiteHelper import SQLiteHelper
 
 # Banned voucher codes (normalized, no spaces)
@@ -8,7 +9,7 @@ BANNED_VOUCHERS = {
     '1234123412341234'
 }
 
-def extract_voucher_codes(text: str) -> list:
+def extract_voucher_codes(text: str) -> List[str]:
     """Extract voucher codes from the given text."""
     # Simple regex to find alphanumeric codes, adjust as needed for your voucher format
     regex = r'\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b'

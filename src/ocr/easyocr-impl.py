@@ -4,54 +4,14 @@ import re
 import sys
 import warnings
 import easyocr
-from PIL import Image
-from database.SQLiteHelper import SQLiteHelper
-from database.VoucherDatabase import store_voucher_in_database
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from src.database.SQLiteHelper import SQLiteHelper
+from src.database.VoucherDatabase import store_voucher_in_database, safe_print, extract_voucher_codes
+from src.ocr.image_utils import split_image
 
 # Suppress PyTorch DataLoader warnings about pin_memory
 warnings.filterwarnings("ignore", message=".*pin_memory.*")
-
-def safe_print(message, file=sys.stderr):
-    """Safely print messages, handling encoding issues"""
-    try:
-        print(message, file=file)
-        file.flush()
-    except UnicodeEncodeError:
-        # Fallback to ASCII if Unicode fails
-        print(message.encode('ascii', 'ignore').decode('ascii'), file=file)
-        file.flush()
-
-def split_image(image_path):
-    """Split image into 4 quarters and return list of image objects"""
-    try:
-        # Open the original image
-        img = Image.open(image_path)
-        width, height = img.size
-
-        # Calculate split points
-        mid_width = width // 2
-        mid_height = height // 2
-
-        # Create 4 quarters
-        quarters = []
-
-        # Top-left quarter
-        quarters.append(img.crop((0, 0, mid_width, mid_height)))
-
-        # Top-right quarter
-        quarters.append(img.crop((mid_width, 0, width, mid_height)))
-
-        # Bottom-left quarter
-        quarters.append(img.crop((0, mid_height, mid_width, height)))
-
-        # Bottom-right quarter
-        quarters.append(img.crop((mid_width, mid_height, width, height)))
-
-        return img, quarters
-
-    except Exception as e:
-        safe_print(f"❌\tError splitting image: {str(e)}")
-        return None, []
 
 def extract_text_from_image(reader, image, section_name):
     """Extract text from a single image (PIL Image object or file path)"""
@@ -151,10 +111,8 @@ def main(voucher_path):
     # Print merged text for each section and save vouchers
     for section, texts in sections.items():
         merged_text = ' '.join(texts)
-        regex = r'\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b'
-
-        # Find matches in the merged text
-        matches = re.findall(regex, merged_text)
+        # Use extract_voucher_codes instead of local regex
+        matches = extract_voucher_codes(merged_text)
 
         print(f"[{section}] {merged_text}")
         if matches:

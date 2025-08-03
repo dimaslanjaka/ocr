@@ -3,12 +3,13 @@ import os
 import re
 from typing import List
 from .SQLiteHelper import SQLiteHelper
+from ..utils.file import get_relative_path
 
-def get_database_instance(db_path: str = "tmp/voucher_database.sqlite") -> SQLiteHelper:
+def get_database_instance() -> SQLiteHelper:
     """Get or create a singleton instance of the SQLiteHelper for the voucher database."""
-    if not hasattr(get_database_instance, "_instance") or get_database_instance._db_path != db_path:
-        get_database_instance._instance = SQLiteHelper(db_path)
-        get_database_instance._db_path = db_path
+    if not hasattr(get_database_instance, "_instance") or get_database_instance._db_path != get_relative_path("tmp/voucher_database.sqlite"):
+        get_database_instance._instance = SQLiteHelper(get_relative_path("tmp/voucher_database.sqlite"))
+        get_database_instance._db_path = get_relative_path("tmp/voucher_database.sqlite")
     return get_database_instance._instance
 
 # Banned voucher codes (normalized, no spaces)

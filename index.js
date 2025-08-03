@@ -133,18 +133,12 @@ app.get('/url', async (req, res) => {
   console.log(imageUrl);
 
   try {
-    recognizeImage(imageUrl, config)
-      .then((text) => {
-        console.log('OCR Result:', text);
-        res.send(text);
-      })
-      .catch((error) => {
-        console.error('OCR Error:', error.message);
-        res.status(500).send('Error processing the image.');
-      });
+    const text = await recognizeImage(imageUrl, config);
+    console.log('OCR Result:', text);
+    res.send(text);
   } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).send('An error occurred while processing the image.');
+    console.error('OCR Error:', error.message);
+    res.status(500).send('Error processing the image.');
   }
 });
 
@@ -158,30 +152,27 @@ app.post('/upload', upload.single('image'), async (req, res) => {
     const imagePath = req.file.path;
     console.log('Processing uploaded file:', imagePath);
 
-    recognizeImage(imagePath, config)
-      .then((text) => {
-        console.log('OCR Result:', text);
+    try {
+      const text = await recognizeImage(imagePath, config);
+      console.log('OCR Result:', text);
 
-        // Clean up uploaded file after processing
-        fs.unlink(imagePath, (err) => {
-          if (err) console.error('Error deleting file:', err);
-        });
+      // Clean up uploaded file after processing
+      await fs.promises.unlink(imagePath);
 
-        res.json({
-          text: text,
-          filename: req.file.originalname
-        });
-      })
-      .catch((error) => {
-        console.error('OCR Error:', error.message);
-
-        // Clean up uploaded file on error
-        fs.unlink(imagePath, (err) => {
-          if (err) console.error('Error deleting file:', err);
-        });
-
-        res.status(500).send('Error processing the image.');
+      res.json({
+        text: text,
+        filename: req.file.originalname
       });
+    } catch (error) {
+      console.error('OCR Error:', error.message);
+
+      // Clean up uploaded file on error
+      await fs.promises.unlink(imagePath).catch((err) => {
+        if (err) console.error('Error deleting file:', err);
+      });
+
+      res.status(500).send('Error processing the image.');
+    }
   } catch (error) {
     console.error('Error:', error.message);
     res.status(500).send('An error occurred while processing the image.');

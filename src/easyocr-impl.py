@@ -1,22 +1,15 @@
-import sys
-import json
-import easyocr
+import argparse
 import os
 import re
-import argparse
-from PIL import Image
+import sys
 import warnings
+import easyocr
+from PIL import Image
+from database.SQLiteHelper import SQLiteHelper
+from database.VoucherDatabase import store_voucher_in_database
 
 # Suppress PyTorch DataLoader warnings about pin_memory
 warnings.filterwarnings("ignore", message=".*pin_memory.*")
-
-# Set UTF-8 encoding for Windows
-if os.name == 'nt':  # Windows
-    import codecs
-    if hasattr(sys.stdout, 'detach'):
-        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
-    if hasattr(sys.stderr, 'detach'):
-        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
 
 def safe_print(message, file=sys.stderr):
     """Safely print messages, handling encoding issues"""
@@ -103,6 +96,15 @@ def main(voucher_path):
         safe_print(f"❌\tError: Image file not found at {voucher_path}")
         return
 
+    # Initialize database
+    safe_print("🗃️\tInitializing database...")
+    try:
+        db_helper = SQLiteHelper("tmp/voucher_database.sqlite")
+        safe_print("✅\tDatabase initialized successfully")
+    except Exception as e:
+        safe_print(f"❌\tError initializing database: {str(e)}")
+        return
+
     # Initialize EasyOCR
     safe_print("🔧\tInitializing EasyOCR...")
     try:
@@ -146,7 +148,7 @@ def main(voucher_path):
             sections[section] = []
         sections[section].append(item['text'])
 
-    # Print merged text for each section
+    # Print merged text for each section and save vouchers
     for section, texts in sections.items():
         merged_text = ' '.join(texts)
         regex = r'\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b'
@@ -157,6 +159,12 @@ def main(voucher_path):
         print(f"[{section}] {merged_text}")
         if matches:
             safe_print(f"🎯\tFound voucher codes in {section}: {matches}")
+
+            # Save each found voucher to database
+            for voucher_code in matches:
+                # Clean up the voucher code (remove extra spaces)
+                clean_code = re.sub(r'\s+', '', voucher_code)
+                store_voucher_in_database(db_helper, clean_code, voucher_path)
 
     safe_print("🎉\tExtraction completed successfully!")
 

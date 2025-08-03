@@ -1,0 +1,12 @@
+pycocotools
+pycocoevalcap
+tqdm
+pyyaml
+torch
+pytesseract
+opencv-python
+torchvision
+transformers
+customtkinter
+pillow
+easyocr

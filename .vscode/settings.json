@@ -1,0 +1,8 @@
+{
+  "code-runner.executorMap": {
+    "javascript": "node",
+    "typescript": "node --loader ts-node/esm",
+    "python": ".venv\\Scripts\\python.exe -u"
+  },
+  "eslint.useFlatConfig": true
+}

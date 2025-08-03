@@ -39,10 +39,38 @@ def extract_text_from_image(image_path, lang='eng'):
         return "\n".join(merged)
     return original_tesseract
 
+def split_and_extract_text_from_image(image_path: str) -> str:
+    """
+    Split the image into quarters and extract text from each part.
+    :param image_path: Path to the image file.
+    :return: Extracted text from all parts.
+    """
+    img = Image.open(image_path)
+    dewarped_result = dewarp_image(image_path)
+    if dewarped_result is not None:
+        img = dewarped_result[0]  # Get the PIL image
+    else:
+        safe_print("❌\tDewarping failed, using original image.")
+    width, height = img.size
+    halves = [
+        img.crop((0, 0, width // 2, height)),        # Left half
+        img.crop((width // 2, 0, width, height))     # Right half
+    ]
+
+    all_text = []
+    for i, half in enumerate(halves):
+        half_path = get_relative_path("tmp/split", f"half_{i}.png")
+        os.makedirs(os.path.dirname(half_path), exist_ok=True)
+        half.save(half_path)
+        text = pytesseract.image_to_string(half, lang="eng")
+        if text:
+            all_text.append(text)
+
+    return "\n".join(all_text)
 
 if __name__ == "__main__":
     voucher_path = "test/fixtures/voucher - normalized rotation.jpeg"
-    extract = extract_text_from_image(voucher_path)
+    extract = split_and_extract_text_from_image(voucher_path)
     result = extract_voucher_codes(extract)
     try:
         db_helper = SQLiteHelper("tmp/voucher_database.sqlite")

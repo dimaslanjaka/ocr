@@ -12,10 +12,15 @@ export function extractVoucherCodes(text) {
   // Simple regex to find alphanumeric codes, adjust as needed for your voucher format
   const regex = /\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b/g;
   const matches = text.match(regex) || [];
-  // Normalize: remove all spaces, ensure 16 digits, skip banned vouchers
+  // Normalize: remove all spaces, ensure 16 digits, skip banned vouchers, remove duplicates
+  const seen = new Set();
   return matches
     .map((code) => code.replace(/\s+/g, ''))
-    .filter((code) => code.length === 16 && !BANNED_VOUCHERS.has(code));
+    .filter((code) => {
+      if (code.length !== 16 || BANNED_VOUCHERS.has(code) || seen.has(code)) return false;
+      seen.add(code);
+      return true;
+    });
 }
 
 export function safePrint(message, isError = false) {

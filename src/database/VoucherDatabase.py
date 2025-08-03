@@ -20,7 +20,14 @@ def extract_voucher_codes(text: str) -> List[str]:
         for code in codes
         if len(re.sub(r'\s+', '', code)) == 16 and re.sub(r'\s+', '', code) not in BANNED_VOUCHERS
     ]
-    return normalized_codes
+    # Remove duplicates while preserving order
+    seen = set()
+    unique_codes = []
+    for code in normalized_codes:
+        if code not in seen:
+            seen.add(code)
+            unique_codes.append(code)
+    return unique_codes
 
 def safe_print(message, file=sys.stderr):
     """Safely print messages, handling encoding issues"""

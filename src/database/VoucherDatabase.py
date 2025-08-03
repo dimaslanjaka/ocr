@@ -2,6 +2,8 @@ import sys
 import os
 import re
 from typing import List
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from .SQLiteHelper import SQLiteHelper
 from ..utils.file import get_relative_path
 

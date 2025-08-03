@@ -8,7 +8,9 @@ import path from 'path';
 export function extractVoucherCodes(text) {
   // Simple regex to find alphanumeric codes, adjust as needed for your voucher format
   const regex = /\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b/g;
-  return text.match(regex) || [];
+  const matches = text.match(regex) || [];
+  // Normalize: remove all spaces, ensure 16 digits
+  return matches.map((code) => code.replace(/\s+/g, '')).filter((code) => code.length === 16);
 }
 
 export function safePrint(message, isError = false) {
@@ -64,8 +66,8 @@ export async function loadVouchersFromDatabase(dbHelper, imagePath) {
         image_path: record.image_path,
         codes: record.codes
           .split(',')
-          .map((code) => code.trim())
-          .filter(Boolean),
+          .map((code) => code.replace(/\s+/g, '').trim())
+          .filter((code) => code.length === 16),
         created_at: record.created_at
       });
     }
@@ -88,6 +90,12 @@ export async function loadVouchersFromDatabase(dbHelper, imagePath) {
 export async function storeVoucherInDatabase(dbHelper, voucherCode, imagePath) {
   try {
     const normalizedPath = normalizePath(imagePath);
+    // Normalize voucher code: remove spaces, ensure 16 digits
+    const normalizedCode = voucherCode.replace(/\s+/g, '');
+    if (normalizedCode.length !== 16) {
+      safePrint(`⚠️\tVoucher code '${voucherCode}' is not 16 digits after normalization, skipping`);
+      return;
+    }
 
     dbHelper.createTable('vouchers', [
       'image_path TEXT PRIMARY KEY',
@@ -102,25 +110,22 @@ export async function storeVoucherInDatabase(dbHelper, voucherCode, imagePath) {
 
     if (existing && existing.length > 0) {
       const currentCodes = existing[0].codes;
-      if (
-        !currentCodes
-          .split(',')
-          .map((c) => c.trim())
-          .includes(voucherCode)
-      ) {
-        const updatedCodes = currentCodes ? `${currentCodes}, ${voucherCode}` : voucherCode;
+      // Normalize all existing codes for comparison
+      const existingCodes = currentCodes.split(',').map((c) => c.replace(/\s+/g, '').trim());
+      if (!existingCodes.includes(normalizedCode)) {
+        const updatedCodes = currentCodes ? `${currentCodes}, ${normalizedCode}` : normalizedCode;
         await dbHelper.update('vouchers', { codes: updatedCodes }, 'image_path = ?', [normalizedPath]);
-        safePrint(`📝\tUpdated voucher record with ${voucherCode}`);
+        safePrint(`📝\tUpdated voucher record with ${normalizedCode}`);
       } else {
-        safePrint(`⚠️\tVoucher ${voucherCode} already exists for this image, skipping`);
+        safePrint(`⚠️\tVoucher ${normalizedCode} already exists for this image, skipping`);
       }
     } else {
       const voucherData = {
         image_path: normalizedPath,
-        codes: voucherCode
+        codes: normalizedCode
       };
       await dbHelper.insert('vouchers', voucherData);
-      safePrint(`💾\tSaved voucher ${voucherCode} to database`);
+      safePrint(`💾\tSaved voucher ${normalizedCode} to database`);
     }
   } catch (e) {
     safePrint(`❌\tError saving voucher to database: ${e.message}`, true);

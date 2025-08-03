@@ -7,7 +7,10 @@ def extract_voucher_codes(text: str) -> list:
     """Extract voucher codes from the given text."""
     # Simple regex to find alphanumeric codes, adjust as needed for your voucher format
     regex = r'\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b'
-    return re.findall(regex, text)
+    codes = re.findall(regex, text)
+    # Normalize: remove all spaces, ensure 16 digits
+    normalized_codes = [re.sub(r'\s+', '', code) for code in codes if len(re.sub(r'\s+', '', code)) == 16]
+    return normalized_codes
 
 def safe_print(message, file=sys.stderr):
     """Safely print messages, handling encoding issues"""
@@ -52,9 +55,11 @@ def load_vouchers_from_database(db_helper: SQLiteHelper, image_path: str) -> lis
         # Parse the comma-separated codes into lists
         vouchers = []
         for record in records:
+            # Normalize codes: remove spaces, ensure 16 digits
+            codes = [re.sub(r'\s+', '', code) for code in record['codes'].split(',') if len(re.sub(r'\s+', '', code)) == 16]
             voucher_entry = {
                 'image_path': record['image_path'],
-                'codes': [code.strip() for code in record['codes'].split(',') if code.strip()],
+                'codes': codes,
                 'created_at': record['created_at']
             }
             vouchers.append(voucher_entry)
@@ -70,6 +75,11 @@ def store_voucher_in_database(db_helper: SQLiteHelper, voucher_code: str, image_
     """Save found voucher to database"""
     try:
         normalized_path = normalize_path(image_path)
+        # Normalize voucher code: remove spaces, ensure 16 digits
+        normalized_code = re.sub(r'\s+', '', voucher_code)
+        if len(normalized_code) != 16:
+            safe_print(f"⚠️\tVoucher code '{voucher_code}' is not 16 digits after normalization, skipping")
+            return
 
         db_helper.create_table('vouchers', [
             'image_path TEXT PRIMARY KEY',
@@ -83,22 +93,24 @@ def store_voucher_in_database(db_helper: SQLiteHelper, voucher_code: str, image_
 
         if existing:
             current_codes = existing[0]['codes']
-            if voucher_code not in current_codes:
-                updated_codes = f"{current_codes}, {voucher_code}" if current_codes else voucher_code
+            # Normalize all existing codes for comparison
+            existing_codes = [re.sub(r'\s+', '', code) for code in current_codes.split(',')]
+            if normalized_code not in existing_codes:
+                updated_codes = f"{current_codes}, {normalized_code}" if current_codes else normalized_code
                 db_helper.update('vouchers',
                                {'codes': updated_codes},
                                'image_path = ?',
                                (normalized_path,))
-                safe_print(f"📝\tUpdated voucher record with {voucher_code}")
+                safe_print(f"📝\tUpdated voucher record with {normalized_code}")
             else:
-                safe_print(f"⚠️\tVoucher {voucher_code} already exists for this image, skipping")
+                safe_print(f"⚠️\tVoucher {normalized_code} already exists for this image, skipping")
         else:
             voucher_data = {
                 'image_path': normalized_path,
-                'codes': voucher_code
+                'codes': normalized_code
             }
             db_helper.insert('vouchers', voucher_data)
-            safe_print(f"💾\tSaved voucher {voucher_code} to database")
+            safe_print(f"💾\tSaved voucher {normalized_code} to database")
 
     except Exception as e:
         safe_print(f"❌\tError saving voucher to database: {str(e)}")

@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "command": ".\\bin\\vscan.exe -f test/fixtures/voucher.jpeg",
+      "command": ".\\releases\\vscan.exe -f test/fixtures/voucher.jpeg",
       "name": "[Win] voucher scanner",
       "request": "launch",
       "type": "node-terminal"

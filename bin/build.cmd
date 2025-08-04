@@ -46,4 +46,4 @@ if %IS_DOCKER%==1 (
   --jobs=1 ^
   src/ocr/focus_pytesseract.py
 
-copy /Y "%SCRIPT_DIR%..\dist\vscan.exe" "%SCRIPT_DIR%vscan.exe"
+copy /Y "%SCRIPT_DIR%..\dist\vscan.exe" "%SCRIPT_DIR%..\releases\vscan.exe"

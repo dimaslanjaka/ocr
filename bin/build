@@ -3,36 +3,4 @@
 # Get the directory of the current script
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
-# Define variables
-VERSION=1.0.0.0
-ICON=public/favicon.ico
-
-is_running_in_docker=false
-
-# Check for Docker environment file
-if [ -f /.dockerenv ]; then
-    is_running_in_docker=true
-# Check cgroup info for container keywords
-elif grep -qaE 'docker|containerd|kubepods' /proc/1/cgroup 2>/dev/null; then
-    is_running_in_docker=true
-# Check if /proc/self/mountinfo mentions overlayfs (common in Docker)
-elif grep -qa overlay /proc/self/mountinfo 2>/dev/null; then
-    is_running_in_docker=true
-fi
-
-if [ "$is_running_in_docker" = true ]; then
-  py_cmd=python
-else
-  py_cmd="$SCRIPT_DIR/py"
-fi
-
-$py_cmd -m nuitka \
-  --onefile \
-  --output-file=vscan \
-  --output-dir=dist \
-  --include-data-file=public/favicon.ico=favicon.ico \
-  --include-data-dir=test/fixtures/=test/fixtures/ \
-  --jobs=1 \
-  src/ocr/focus_pytesseract.py
-
-cp -f "$SCRIPT_DIR/../dist/vscan" "$SCRIPT_DIR/../releases/vscan"
+python "$SCRIPT_DIR/../bin/build.py"

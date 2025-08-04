@@ -2,9 +2,8 @@ import sys
 import os
 import pytesseract
 from PIL import Image
-import cv2
-import numpy as np
 import argparse
+from pathlib import Path
 from proxy_hunter import write_file
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
@@ -19,51 +18,24 @@ from src.utils.file import get_relative_path
 from src.ocr.image_utils import dewarp_image
 
 
-def preprocess_image_for_ocr(image_path: str) -> Image.Image:
-    """
-    Preprocess the image for better OCR results.
-    Steps: Upscale, grayscale, contrast, sharpening, thresholding, noise removal.
-    """
-    img = cv2.imread(image_path)
-    if img is None:
-        raise FileNotFoundError(f"Could not load image at path: {image_path}")
-
-    # Upscale image for better OCR (2x)
-    img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
-
-    # Convert to grayscale
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Increase contrast using histogram equalization
-    gray = cv2.equalizeHist(gray)
-
-    # Sharpen image
-    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
-    sharp = cv2.filter2D(gray, -1, kernel)
-
-    # Try Otsu's thresholding
-    _, thresh = cv2.threshold(sharp, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
-    # Remove noise
-    denoised = cv2.medianBlur(thresh, 3)
-
-    # Convert back to PIL Image
-    pil_img = Image.fromarray(denoised)
-    return pil_img
-
-
 def focus_extract_text_from_image(image_path: str) -> str:
     """
     Split the image into halves and extract text from each part.
     :param image_path: Path to the image file.
     :return: Extracted text from all parts.
     """
-    # img = preprocess_image_for_ocr(image_path)
-    # img = Image.open(image_path)
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image path does not exist: {image_path}")
+    elif os.path.exists(os.path.join(os.getcwd(), image_path)):
+        # fix for relative paths
+        image_path = os.path.join(os.getcwd(), image_path)
+    elif os.path.exists(os.path.join(Path.cwd(), image_path)):
+        # fix for relative paths
+        image_path = os.path.join(Path.cwd(), image_path)
     dewarp_result = dewarp_image(image_path)
     if dewarp_result is None:
-        raise ValueError(f"dewarp_image returned None for image: {image_path}")
-    if isinstance(dewarp_result, tuple):
+        img = Image.open(image_path)
+    elif isinstance(dewarp_result, tuple):
         img = dewarp_result[0]
     else:
         img = dewarp_result

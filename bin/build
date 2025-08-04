@@ -28,6 +28,7 @@ fi
 
 $py_cmd -m nuitka \
   --onefile \
+  --output-file=vscan \
   --output-dir=dist \
   --include-data-file=public/favicon.ico=favicon.ico \
   --include-data-dir=test/fixtures/=test/fixtures/ \

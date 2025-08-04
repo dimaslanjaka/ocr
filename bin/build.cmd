@@ -35,6 +35,7 @@ if %IS_DOCKER%==1 (
 %PYTHON_CMD% -m nuitka ^
   --onefile ^
   --output-dir=dist ^
+  --output-file=vscan.exe ^
   --windows-icon-from-ico="%ICON%" ^
   --windows-company-name="%COMPANY_NAME%" ^
   --windows-product-name="Voucher Scanner" ^

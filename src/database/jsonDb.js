@@ -1,4 +1,4 @@
-import MD5 from 'crypto-js/md5';
+import CryptoJS from 'crypto-js';
 import fs from 'fs-extra';
 import path from 'path';
 import { jsonParseWithCircularRefs, jsonStringifyWithCircularRefs, writefile } from 'sbg-utility';
@@ -66,7 +66,7 @@ class JsonDB {
    * @returns {string} The MD5 hash of the id.
    */
   #hash(id) {
-    return MD5(id).toString();
+    return CryptoJS.MD5(id).toString();
   }
 }
 

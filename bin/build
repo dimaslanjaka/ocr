@@ -35,4 +35,4 @@ $py_cmd -m nuitka \
   --jobs=1 \
   src/ocr/focus_pytesseract.py
 
-cp -f dist/vscan "$SCRIPT_DIR/vscan"
+cp -f "$SCRIPT_DIR/../dist/vscan" "$SCRIPT_DIR/vscan"

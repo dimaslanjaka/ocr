@@ -1,0 +1,12 @@
+node_modules/
+.venv/
+venv/
+dist/
+tmp/
+**/tmp/
+__pycache__/
+**/__pycache__/
+.run/
+uploads/
+**/uploads/
+.yarn/cache*/

@@ -1,0 +1,26 @@
+# Usage:
+#   docker compose up --build
+#
+# To expose ports, uncomment the 'ports' section and set your desired port mapping.
+# Example:
+#   ports:
+#     - "8080:8080"  # Maps host port 8080 to container port 8080
+
+services:
+  node-ocr-app:
+    image: ocr-project
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./dist:/app/dist
+      - ./bin:/app/bin
+    environment:
+      - TESSDATA_PREFIX=/app/tessdata
+      - NUITKA_CACHE_DIR=/app/tmp/nuitka-cache
+      - ESLINT_USE_FLAT_CONFIG=true
+      - DEBUG_PKG=1
+    entrypoint: ["bash", "bin/build"]
+    # Uncomment and set ports if your app exposes any
+    # ports:
+    #   - "8080:8080"

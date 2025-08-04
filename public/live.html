@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://rawcdn.githack.com/dimaslanjaka/Web-Manajemen/0f634f242ff259087c9fe176e8f28ccaebb5c015/css/all.min.css" />
+  </head>
+  <body>
+    <div class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <h1 class="text-2xl font-bold mb-4"><i class="fa-duotone fa-camera-web mr-2"></i>Live Voucher Scanner</h1>
+      <div class="mb-4 w-full max-w-7xl flex flex-col items-center">
+        <label for="cameraSelect" class="mb-2 font-medium"><i class="fa-duotone fa-camera-cctv mr-2"></i>Select Camera:</label>
+        <select id="cameraSelect" class="mb-4 p-2 rounded border border-gray-300 w-full max-w-md"></select>
+        <div class="flex gap-4 mt-2">
+          <button id="startStreamBtn" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 flex items-center"><i class="fa-duotone fa-play mr-2"></i>Start Stream</button>
+          <button id="stopStreamBtn" class="px-4 py-2 bg-red-600 text-white rounded shadow hover:bg-red-700 flex items-center"><i class="fa-duotone fa-stop mr-2"></i>Stop Stream</button>
+        </div>
+      </div>
+      <div class="w-full max-w-7xl flex justify-center">
+        <video id="liveVideo" autoplay playsinline class="rounded shadow-lg w-full aspect-video h-auto min-h-[200px] max-h-[80vh] sm:min-h-[300px] sm:rounded-lg sm:shadow-lg sm:max-w-7xl"></video>
+      </div>
+    </div>
+    <script>
+      const videoElement = document.getElementById('liveVideo');
+      const cameraSelect = document.getElementById('cameraSelect');
+      const startStreamBtn = document.getElementById('startStreamBtn');
+      const stopStreamBtn = document.getElementById('stopStreamBtn');
+      let currentStream;
+      let frameInterval;
+
+      // List cameras and populate select
+      async function getCameras() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        cameraSelect.innerHTML = '';
+        videoDevices.forEach((device, idx) => {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          option.text = device.label || `Camera ${idx + 1}`;
+          cameraSelect.appendChild(option);
+        });
+      }
+
+      // Start stream from selected camera
+      async function startStream(deviceId) {
+        if (currentStream) {
+          currentStream.getTracks().forEach(track => track.stop());
+        }
+        if (frameInterval) clearInterval(frameInterval);
+
+        try {
+          const constraints = { video: { deviceId: deviceId ? { exact: deviceId } : undefined }, audio: false };
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          videoElement.srcObject = stream;
+          currentStream = stream;
+
+          // Start sending frames to backend
+          startFrameCapture();
+        } catch (err) {
+          alert('Could not access camera: ' + err);
+        }
+      }
+
+      // Stop stream
+      function stopStream() {
+        if (currentStream) {
+          currentStream.getTracks().forEach(track => track.stop());
+          currentStream = null;
+        }
+        if (frameInterval) {
+          clearInterval(frameInterval);
+          frameInterval = null;
+        }
+        videoElement.srcObject = null;
+      }
+
+      // Capture frames & send to backend
+      function startFrameCapture() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        frameInterval = setInterval(() => {
+          if (!videoElement.videoWidth) return; // wait for video
+
+          canvas.width = videoElement.videoWidth;
+          canvas.height = videoElement.videoHeight;
+          ctx.drawImage(videoElement, 0, 0);
+
+          canvas.toBlob(blob => {
+            const formData = new FormData();
+            formData.append('frame', blob, 'frame.jpg');
+
+            fetch('/upload', {
+              method: 'POST',
+              body: formData
+            }).catch(err => console.error('Upload failed:', err));
+          }, 'image/jpeg', 0.7);
+        }, 200); // every 200ms
+      }
+
+      // On camera selection change
+      cameraSelect.addEventListener('change', () => {
+        startStream(cameraSelect.value);
+      });
+
+      // Start/Stop button events
+      startStreamBtn.addEventListener('click', () => {
+        startStream(cameraSelect.value);
+      });
+      stopStreamBtn.addEventListener('click', () => {
+        stopStream();
+      });
+
+      // Initialize
+      async function init() {
+        await getCameras();
+        // Automatically start stream if cameras are available
+        // if (cameraSelect.options.length > 0) {
+        //   await startStream(cameraSelect.value);
+        // }
+        // Update camera list if devices change
+        navigator.mediaDevices.addEventListener('devicechange', async () => {
+          await getCameras();
+        });
+      }
+      init();
+    </script>
+  </body>
+</html>

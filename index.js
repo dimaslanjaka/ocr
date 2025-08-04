@@ -3,12 +3,85 @@ import { bin, install } from 'cloudflared';
 import 'dotenv/config';
 import express from 'express';
 import fs from 'fs';
-import indexRoute from './src/routes/index.js';
+import http from 'http';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { WebSocketServer } from 'ws';
+import { indexFO, liveFO } from './src/routes/frontend.js';
 import { uploadRoute } from './src/routes/upload.js';
 import { urlOcrRoute } from './src/routes/url.js';
 
+// ESM-compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-const _router = express.Router();
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+
+let broadcaster = null;
+let viewers = new Set();
+
+wss.on('connection', (ws) => {
+  ws.on('message', (message) => {
+    let data;
+    try {
+      data = JSON.parse(message);
+    } catch {
+      console.error('Invalid WS message:', message);
+      return;
+    }
+
+    switch (data.type) {
+      case 'broadcaster':
+        broadcaster = ws;
+        ws.role = 'broadcaster';
+        break;
+
+      case 'viewer':
+        viewers.add(ws);
+        ws.role = 'viewer';
+        if (broadcaster) {
+          broadcaster.send(JSON.stringify({ type: 'viewer' }));
+        }
+        break;
+
+      case 'offer':
+        if (data.target === 'viewer') {
+          viewers.forEach((v) => {
+            if (v.readyState === ws.OPEN) v.send(JSON.stringify(data));
+          });
+        }
+        break;
+
+      case 'answer':
+        if (broadcaster && broadcaster.readyState === ws.OPEN) {
+          broadcaster.send(JSON.stringify(data));
+        }
+        break;
+
+      case 'candidate':
+        if (ws.role === 'broadcaster') {
+          viewers.forEach((v) => {
+            if (v.readyState === ws.OPEN) v.send(JSON.stringify(data));
+          });
+        } else if (ws.role === 'viewer') {
+          if (broadcaster && broadcaster.readyState === ws.OPEN) {
+            broadcaster.send(JSON.stringify(data));
+          }
+        }
+        break;
+    }
+  });
+
+  ws.on('close', () => {
+    if (ws.role === 'broadcaster') {
+      broadcaster = null;
+    } else if (ws.role === 'viewer') {
+      viewers.delete(ws);
+    }
+  });
+});
 
 const cfCallback = () => {
   const cloudflaredToken = process.env.CLOUDFLARED_TOKEN;
@@ -27,7 +100,6 @@ const cfCallback = () => {
     const output = data.toString();
     console.log('Cloudflared:', output.trim());
 
-    // Capture tunnel URL if available
     const urlMatch = output.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/);
     if (urlMatch) {
       console.log('🌐 Tunnel URL:', urlMatch[0]);
@@ -38,7 +110,6 @@ const cfCallback = () => {
     const output = data.toString();
     console.log('Cloudflared Info:', output.trim());
 
-    // Look for hostname configuration
     if (output.includes('hostname')) {
       const hostnameMatch = output.match(/"hostname":"([^"]+)"/);
       if (hostnameMatch) {
@@ -59,7 +130,6 @@ const cfCallback = () => {
     console.error('Failed to start cloudflared:', err);
   });
 
-  // Graceful shutdown
   process.on('SIGINT', () => {
     console.log('Shutting down cloudflared...');
     cloudflared.kill('SIGTERM');
@@ -84,22 +154,20 @@ const startCloudflared = () => {
   }
 };
 
-// Middleware to serve static files and parse form data
-app.use(express.static('public'));
+// Middleware
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 
-const PORT = 8080; // Changed to match cloudflared config
-
-// Register routes
-app.get('/', indexRoute);
+// Routes
+app.get('/', indexFO);
 app.get('/url', urlOcrRoute);
+app.get('/live', liveFO);
 uploadRoute(app);
 
-// Start the server
-app.listen(PORT, () => {
+// Start server
+const PORT = 8080;
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   console.log('🚀 Starting cloudflared tunnel...');
-
-  // Start cloudflared after server is ready
   startCloudflared();
 });

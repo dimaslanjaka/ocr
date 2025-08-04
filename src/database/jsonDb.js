@@ -1,4 +1,4 @@
-import '../shim.js';
+import '../global_shim.js';
 
 /// Import necessary modules
 import CryptoJS from 'crypto-js';

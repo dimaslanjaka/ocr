@@ -1,4 +1,4 @@
-import './src/shim.js';
+import './src/global_shim.js';
 import 'dotenv/config';
 
 ///

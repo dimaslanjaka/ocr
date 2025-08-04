@@ -15,6 +15,7 @@ services:
     volumes:
       - ./dist:/app/dist
       - ./bin:/app/bin
+      - ./releases:/app/releases
     environment:
       - TESSDATA_PREFIX=/app/tessdata
       - NUITKA_CACHE_DIR=/app/tmp/nuitka-cache

@@ -10,12 +10,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 from src.database.VoucherDatabase import (
     extract_voucher_codes,
-    get_database_instance,
     safe_print,
-    store_voucher_in_database,
+    storeVoucherJson,
 )
 from src.utils.file import get_relative_path
 from src.ocr.image_utils import detect_image_skew_angle, dewarp_image, is_image_upright
+import json
 
 
 def focus_extract_text_from_image(image_path: str) -> str:
@@ -35,9 +35,9 @@ def focus_extract_text_from_image(image_path: str) -> str:
     # Detect if the image is upright
     if not is_image_upright(image_path):
         # Rotate the image to make it upright
-        print("Image is not upright, correcting...")
+        safe_print("Image is not upright, correcting...")
         angle = detect_image_skew_angle(image_path)
-        print(f"Detected skew angle: {angle} degrees")
+        safe_print(f"Detected skew angle: {angle} degrees")
         if angle is not None:
             img = Image.open(image_path)
             img = img.rotate(angle, expand=True)
@@ -45,7 +45,7 @@ def focus_extract_text_from_image(image_path: str) -> str:
             image_path = get_relative_path(f"tmp/fixed/{basename}")
             os.makedirs(os.path.dirname(image_path), exist_ok=True)
             img.save(image_path)
-            print(f"Corrected image saved to: {image_path}")
+            safe_print(f"Corrected image saved to: {image_path}")
     dewarp_result = dewarp_image(image_path)
     if dewarp_result is None:
         img = Image.open(image_path)
@@ -91,12 +91,8 @@ if __name__ == "__main__":
     voucher_path = args.file
     extract = focus_extract_text_from_image(voucher_path)
     result = extract_voucher_codes(extract)
-    try:
-        db_helper = get_database_instance()
-        safe_print("✅\tDatabase initialized successfully")
-    except Exception as e:
-        safe_print(f"❌\tError initializing database: {str(e)}")
-    if result:
+    if isinstance(result, list):
+        safe_print("\n\n" + json.dumps(result, indent=2, ensure_ascii=False))
         for code in result:
             # safe_print(f"📜\tFound voucher code: {code}")
-            store_voucher_in_database(db_helper, code, voucher_path)
+            storeVoucherJson(code, voucher_path)

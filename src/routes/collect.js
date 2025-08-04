@@ -5,15 +5,13 @@
 
 import Queue from 'bull';
 import express from 'express';
-import fs from 'fs-extra';
-import * as glob from 'glob';
 import path from 'path';
-import { jsonParseWithCircularRefs } from 'sbg-utility';
+import JsonDB from '../database/jsonDb.js';
 
 const router = express.Router();
 
 // Create a Bull queue for glob jobs
-const dbQueue = new Queue('db-queue', {
+const dbQueue = new Queue('collect-queue', {
   redis: { host: '127.0.0.1', port: 6379 }
 });
 
@@ -29,31 +27,12 @@ const index = (req, res) => {
 // Queue processor for glob jobs
 dbQueue.process(async (job) => {
   const dbDir = job.data.dbDir;
-  return new Promise((resolve, reject) => {
-    const vouchers = [];
-    const stream = glob.stream('**/*.json', { cwd: dbDir });
-
-    stream.on('data', (file) => {
-      try {
-        const filePath = path.join(dbDir, file);
-        const data = jsonParseWithCircularRefs(fs.readFileSync(filePath, 'utf-8'));
-        if (data) {
-          vouchers.push(data);
-        }
-      } catch (err) {
-        // Optionally log or handle file read/parse errors
-        console.error(`Error reading or parsing file ${file}:`, err);
-      }
-    });
-
-    stream.on('end', () => {
-      resolve(vouchers);
-    });
-
-    stream.on('error', (err) => {
-      reject(err);
-    });
-  });
+  const db = new JsonDB(dbDir);
+  const results = [];
+  for await (const arr of db.loadAllStream()) {
+    results.push(arr);
+  }
+  return results.flat();
 });
 
 const collector = async (req, res) => {

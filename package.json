@@ -1,6 +1,9 @@
 {
   "name": "node-ocr-app",
   "type": "module",
+  "scripts": {
+    "test": "jest --runInBand --detectOpenHandles --forceExit"
+  },
   "dependencies": {
     "axios": "^1.11.0",
     "better-sqlite3": "^12.2.0",
@@ -24,8 +27,14 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.28.0",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.32.0",
+    "@jest/environment": "^30.0.5",
+    "@jest/expect": "^30.0.5",
+    "@jest/globals": "^30.0.5",
+    "@jest/types": "^30.0.5",
+    "@types/babel__preset-env": "^7",
     "@types/crypto-js": "^4",
     "@types/fs-extra": "^11",
     "@types/ws": "^8",
@@ -36,7 +45,12 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
     "globals": "^16.3.0",
+    "jest": "^30.0.5",
+    "jest-config": "^30.0.5",
+    "jest-mock": "^30.0.5",
     "prettier": "^3.6.2",
+    "ts-jest": "^29.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   },
   "workspaces": [

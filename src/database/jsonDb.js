@@ -1,3 +1,6 @@
+import '../shim.js';
+
+/// Import necessary modules
 import CryptoJS from 'crypto-js';
 import fs from 'fs-extra';
 import path from 'path';

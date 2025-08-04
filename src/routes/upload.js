@@ -1,7 +1,7 @@
 import multer from 'multer';
 import fs from 'fs-extra';
 import path from 'path';
-import { recognizeImage } from '../ocr/tesseract.js';
+import { ocrQueue } from '../ocr/ocrQueue.js';
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -28,13 +28,6 @@ const upload = multer({
   }
 });
 
-// Tesseract configuration
-const config = {
-  lang: 'eng', // Language of OCR
-  oem: 1, // OCR Engine mode
-  psm: 3 // Page segmentation mode
-};
-
 export function uploadRoute(app) {
   // Accept both "frame" (from live camera) and "image" (manual upload)
   app.post('/upload', upload.single('frame'), async (req, res) => {
@@ -44,25 +37,24 @@ export function uploadRoute(app) {
       }
 
       const imagePath = req.file.path;
-      console.log('Processing uploaded frame:', imagePath);
+      // console.log('Queueing uploaded frame:', imagePath);
 
-      try {
-        const text = await recognizeImage(imagePath, config);
-        console.log('OCR Result:', text);
+      // Add OCR job to the queue
+      const job = await ocrQueue.add({ imagePath });
 
-        // Clean up the image file after processing
-        setTimeout(() => {
-          fs.rmSync(imagePath, { force: true });
-        }, 5000);
-
-        res.json({
-          text: text.trim(),
-          filename: req.file.originalname
+      // Wait for job completion and respond
+      job
+        .finished()
+        .then((result) => {
+          res.json({
+            text: result.text.trim(),
+            filename: req.file.originalname
+          });
+        })
+        .catch((error) => {
+          console.error('OCR Error:', error);
+          res.status(500).send('Error processing the image.');
         });
-      } catch (error) {
-        console.error('OCR Error:', error);
-        res.status(500).send('Error processing the image.');
-      }
     } catch (error) {
       console.error('Error:', error);
       res.status(500).send('An error occurred while processing the image.');

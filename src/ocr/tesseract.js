@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import tesseract from 'node-tesseract-ocr';
 import path from 'path';
 import { cropImageVariants } from './image_utils.js';
+import { spawnAsync } from 'cross-spawn';
 
 /**
  * Recognize text from an image file or URL using Tesseract OCR.
@@ -76,4 +77,16 @@ export async function recognizeImage(imagePathOrUrl, config) {
   // Remove duplicate lines and return
   const uniqueLines = Array.from(new Set(mergedText.split(/\r?\n/))).join('\n');
   return uniqueLines;
+}
+
+export async function recognizeImagePython(imagePathOrUrl) {
+  const isWindows = process.platform === 'win32';
+  const pythonPath = isWindows ? 'python' : 'python3';
+  const scriptPath = path.join(process.cwd(), 'src', 'ocr', 'focus_pytesseract.py');
+  const args = [scriptPath, imagePathOrUrl];
+  const result = await spawnAsync(pythonPath, args, { stdio: 'pipe' });
+  if (result.error) {
+    throw new Error(`Python OCR failed: ${result.error.message}`);
+  }
+  return result.output.toString().trim();
 }

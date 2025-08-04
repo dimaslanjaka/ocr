@@ -67,7 +67,7 @@ elif not ISWIN:
     PYTHON_CMD = f"{__dirname}/py"
 else:
     PYTHON_CMD = f"{__dirname}/py.cmd"
-
+release_dir = os.path.normpath(os.path.join(__dirname, "../releases"))
 
 def _log_info(msg):
     sys.stdout.write(f"[INFO] {msg}\n")
@@ -79,9 +79,8 @@ def _log_error(msg):
 
 def build_scanner():
     filename = "vscan.exe" if ISWIN else "vscan"
-    release_dir = os.path.join(__dirname, "/../releases")
-    release_path = os.path.join(release_dir, filename)
-    dist_path = os.path.join(__dirname, "/../dist", filename)
+    release_path = os.path.normpath(os.path.join(release_dir, filename))
+    dist_path = os.path.normpath(os.path.join(__dirname, "../dist", filename))
     if ISWIN:
         nuitka_os_args = [
             f"--windows-icon-from-ico={ICON}",
@@ -116,6 +115,9 @@ def build_scanner():
         sys.exit(result.returncode)
     else:
         # Copy the dist binary to release directory
+        if not os.path.exists(dist_path):
+            _log_error(f"Expected build output not found: {dist_path}")
+            sys.exit(1)
         os.makedirs(release_dir, exist_ok=True)
         shutil.copy2(dist_path, release_path)
 

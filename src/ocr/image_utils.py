@@ -245,3 +245,53 @@ def rotate_image(image: Union[str, Image.Image]) -> list[tuple[Image.Image, int,
     except Exception as e:
         safe_print(f"❌\tError rotating image: {str(e)}")
         return []
+
+
+def detect_image_skew_angle(image: Union[str, Image.Image]) -> float:
+    """
+    Deteksi sudut kemiringan (skew angle) gambar dokumen/teks.
+    Mengembalikan sudut (dalam derajat). Positif = miring searah jarum jam.
+    Jika gagal, return 0.0.
+    """
+    try:
+        # Terima path atau PIL Image
+        if isinstance(image, str):
+            img = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
+            image_path = image
+        elif isinstance(image, Image.Image):
+            img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
+            image_path = getattr(image, "filename", "in_memory_image")
+        else:
+            safe_print("❌\tInvalid input type for detect_image_skew_angle.")
+            return 0.0
+
+        if img is None:
+            safe_print(f"❌\tError loading image for skew detection: {image_path}")
+            return 0.0
+
+        # Threshold untuk memperjelas garis
+        _, thresh = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+        # Cari kontur, lalu cari minAreaRect (bounding box miring)
+        coords = np.column_stack(np.where(thresh > 0))
+        if coords.shape[0] < 10:
+            safe_print("❌\tNot enough features for skew detection.")
+            return 0.0
+        rect = cv2.minAreaRect(coords)
+        angle = rect[-1]
+        # Koreksi sudut agar hasilnya -45..+45
+        if angle < -45:
+            angle = 90 + angle
+        return float(angle)
+    except Exception as e:
+        safe_print(f"❌\tError detecting skew angle: {str(e)}")
+        return 0.0
+
+
+def is_image_upright(image: Union[str, Image.Image], tolerance: float = 2.0) -> bool:
+    """
+    Cek apakah gambar sudah tegak lurus (tidak miring), dengan toleransi derajat tertentu.
+    Return True jika sudut kemiringan antara -tolerance sampai +tolerance derajat.
+    """
+    angle = detect_image_skew_angle(image)
+    return abs(angle) <= tolerance

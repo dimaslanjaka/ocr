@@ -15,7 +15,7 @@ from src.database.VoucherDatabase import (
     store_voucher_in_database,
 )
 from src.utils.file import get_relative_path
-from src.ocr.image_utils import dewarp_image
+from src.ocr.image_utils import detect_image_skew_angle, dewarp_image, is_image_upright
 
 
 def focus_extract_text_from_image(image_path: str) -> str:
@@ -32,6 +32,15 @@ def focus_extract_text_from_image(image_path: str) -> str:
     elif os.path.exists(os.path.join(Path.cwd(), image_path)):
         # fix for relative paths
         image_path = os.path.join(Path.cwd(), image_path)
+    # Detect if the image is upright
+    if not is_image_upright(image_path):
+        # Rotate the image to make it upright
+        angle = detect_image_skew_angle(image_path)
+        if angle is not None:
+            img = Image.open(image_path)
+            img = img.rotate(-angle, expand=True)
+            image_path = get_relative_path("tmp/fixed/corrected_image.png")
+            img.save(image_path)
     dewarp_result = dewarp_image(image_path)
     if dewarp_result is None:
         img = Image.open(image_path)
@@ -70,7 +79,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-f",
         "--file",
-        default=get_relative_path("test/fixtures/voucher-fix.jpeg"),
+        default=get_relative_path("test/fixtures/voucher.jpeg"),
         help="Path to the voucher image file",
     )
     args = parser.parse_args()

@@ -45,3 +45,5 @@ if %IS_DOCKER%==1 (
   --include-data-dir=test/fixtures/=test/fixtures/ ^
   --jobs=1 ^
   src/ocr/focus_pytesseract.py
+
+copy /Y dist\vscan.exe "%SCRIPT_DIR%vscan.exe"

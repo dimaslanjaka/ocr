@@ -155,19 +155,31 @@ def storeVoucherJson(voucherCode: str, imagePath: str) -> None:
     db = JsonDB(os.path.join(os.getcwd(), "tmp", "vouchers"))
 
     try:
-        vouchers: List[str] = db.load(imagePath) or [] # pyright: ignore[reportAssignmentType]
+        vouchers = db.load(imagePath) or []
+        if not isinstance(vouchers, list):
+            vouchers = []
     except FileNotFoundError:
         vouchers = []
 
     vouchers.append(voucherCode)
 
-    # Ensure no duplicates and normalize (remove spaces, trim)
+    # Ensure no duplicates and normalize
     uniqueVouchers = list({
         re.sub(r"\s+", "", v).strip()
         for v in vouchers
     })
 
-    db.save(imagePath, uniqueVouchers)
+    # Filter out banned vouchers and ensure valid length
+    filteredVouchers = [
+        v for v in uniqueVouchers
+        if len(v) == 16 and v not in BANNED_VOUCHERS
+    ]
+
+    if not filteredVouchers:
+        safe_print(f"⚠️\tNo valid vouchers to store for {imagePath}")
+        return
+
+    db.save(imagePath, filteredVouchers)
 
 
 def loadVoucherJson(imagePath: str) -> Optional[Any]:

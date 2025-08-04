@@ -161,7 +161,13 @@ export function storeVoucherJson(voucherCode, imagePath) {
   vouchers.push(voucherCode);
   // Ensure no duplicates and normalize
   const uniqueVouchers = Array.from(new Set(vouchers.map((v) => v.replace(/\s+/g, '').trim())));
-  db.save(imagePath, uniqueVouchers);
+  // Ensure banned vouchers are not stored
+  const filteredVouchers = uniqueVouchers.filter((v) => v.length === 16 && !BANNED_VOUCHERS.has(v));
+  if (filteredVouchers.length === 0) {
+    safePrint(`⚠️\tNo valid vouchers to store for ${imagePath}`);
+    return;
+  }
+  db.save(imagePath, filteredVouchers);
 }
 
 /**

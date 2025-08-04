@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Database Collector</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS for CSV export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
     <link
       rel="stylesheet"
@@ -16,19 +18,24 @@
         <h1 class="text-2xl font-bold text-gray-800 flex items-center">
           <i class="fa-solid fa-database mr-3 text-blue-500"></i> Database Collector
         </h1>
-        <button id="downloadCsvBtn" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors">
+        <button
+          id="downloadCsvBtn"
+          class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors">
           <i class="fa-solid fa-download"></i>
           <span>CSV</span>
         </button>
       </div>
       <div class="mb-2 text-gray-600 text-sm">Live voucher data updates every 3 seconds.</div>
-      <pre id="output" class="bg-gray-50 p-4 rounded-lg text-xs whitespace-pre-wrap border border-gray-200 h-96 overflow-auto"></pre>
+      <pre
+        id="output"
+        class="bg-gray-50 p-4 rounded-lg text-xs whitespace-pre-wrap border border-gray-200 h-96 overflow-auto"></pre>
     </div>
     <script>
-      let latestVouchers = [];
+      let latestVouchers;
       async function fetchAndDisplay() {
         try {
-          const res = await fetch('/collect/get', { method: 'POST' });
+          const urlWithoutParam = window.location.href.split('?')[0];
+          const res = await fetch(`${urlWithoutParam}/get`, { method: 'POST' });
           const vouchers = await res.json();
           latestVouchers = vouchers;
           document.getElementById('output').textContent = JSON.stringify(vouchers, null, 2);
@@ -39,25 +46,21 @@
       }
       fetchAndDisplay();
 
-      function arrayToCsv(arr) {
-        if (!Array.isArray(arr) || arr.length === 0) return '';
-        // If array of objects, use keys as header
-        if (typeof arr[0] === 'object' && arr[0] !== null) {
-          const keys = Object.keys(arr[0]);
-          const header = keys.map(k => '"' + k.replace(/"/g, '""') + '"').join(',');
-          const rows = arr.map(obj => keys.map(k => '"' + String(obj[k] ?? '').replace(/"/g, '""') + '"').join(','));
-          return [header, ...rows].join("\n");
-        }
-        // Fallback: array of primitives
-        return arr.map(v => '"' + String(v).replace(/"/g, '""') + '"').join("\n");
-      }
-
-      document.getElementById('downloadCsvBtn').addEventListener('click', function() {
-        if (!Array.isArray(latestVouchers) || latestVouchers.length === 0) {
+      document.getElementById('downloadCsvBtn').addEventListener('click', function () {
+        if (!latestVouchers) {
           alert('No vouchers to export.');
           return;
         }
-        const csvContent = arrayToCsv(latestVouchers);
+        let csvContent = '';
+        if (Array.isArray(latestVouchers)) {
+          // Convert to CSV string (with header)
+          const header = 'Voucher\n';
+          csvContent = header + latestVouchers.join('\n');
+        } else {
+          const ws = XLSX.utils.json_to_sheet(latestVouchers);
+          csvContent = XLSX.utils.sheet_to_csv(ws);
+        }
+        // alert(csvContent); // For debugging, remove in production
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

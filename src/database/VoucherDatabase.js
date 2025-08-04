@@ -1,4 +1,5 @@
 import path from 'path';
+import JsonDB from './jsonDb.js';
 
 // Banned voucher codes (normalized, no spaces)
 const BANNED_VOUCHERS = new Set(['1234123412341234']);
@@ -143,5 +144,38 @@ export async function storeVoucherInDatabase(dbHelper, voucherCode, imagePath) {
     }
   } catch (e) {
     safePrint(`❌\tError saving voucher to database: ${e.message}`, true);
+  }
+}
+
+/**
+ * Store a voucher code as JSON for a given image path.
+ * @param {string} voucherCode - The voucher code to store.
+ * @param {string} imagePath - The image path associated with the voucher.
+ */
+export function storeVoucherJson(voucherCode, imagePath) {
+  const db = new JsonDB(path.join(process.cwd(), 'tmp/vouchers'));
+  /**
+   * @type {string[]}
+   */
+  const vouchers = db.load(imagePath) || [];
+  vouchers.push(voucherCode);
+  // Ensure no duplicates and normalize
+  const uniqueVouchers = Array.from(new Set(vouchers.map((v) => v.replace(/\s+/g, '').trim())));
+  db.save(imagePath, uniqueVouchers);
+}
+
+/**
+ * Load a voucher code JSON for a given image path.
+ * @template T
+ * @param {string} imagePath - The image path to load the voucher for.
+ * @returns {T|null} The loaded voucher object of type T, or null if not found or error.
+ */
+export function loadVoucherJson(imagePath) {
+  const db = new JsonDB(path.join(process.cwd(), 'tmp/vouchers'));
+  try {
+    return db.load(imagePath);
+  } catch (e) {
+    safePrint(`❌\tError loading voucher JSON: ${e.message}`, true);
+    return null;
   }
 }

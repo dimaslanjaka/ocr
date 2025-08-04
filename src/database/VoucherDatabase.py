@@ -1,10 +1,11 @@
 import sys
 import os
 import re
-from typing import List
+from typing import Any, List, Optional
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from .SQLiteHelper import SQLiteHelper
+from src.database.jsonDb import JsonDB
 from ..utils.file import get_relative_path
 
 def get_database_instance() -> SQLiteHelper:
@@ -144,3 +145,41 @@ def store_voucher_in_database(db_helper: SQLiteHelper, voucher_code: str, image_
 
     except Exception as e:
         safe_print(f"❌\tError saving voucher to database: {str(e)}")
+
+def storeVoucherJson(voucherCode: str, imagePath: str) -> None:
+    """
+    Store a voucher code as JSON for a given image path.
+    :param voucherCode: The voucher code to store.
+    :param imagePath: The image path associated with the voucher.
+    """
+    db = JsonDB(os.path.join(os.getcwd(), "tmp", "vouchers"))
+
+    try:
+        vouchers: List[str] = db.load(imagePath) or [] # pyright: ignore[reportAssignmentType]
+    except FileNotFoundError:
+        vouchers = []
+
+    vouchers.append(voucherCode)
+
+    # Ensure no duplicates and normalize (remove spaces, trim)
+    uniqueVouchers = list({
+        re.sub(r"\s+", "", v).strip()
+        for v in vouchers
+    })
+
+    db.save(imagePath, uniqueVouchers)
+
+
+def loadVoucherJson(imagePath: str) -> Optional[Any]:
+    """
+    Load a voucher code JSON for a given image path.
+    :param imagePath: The image path to load the voucher for.
+    :return: The loaded voucher list or None if not found or error.
+    """
+    db = JsonDB(os.path.join(os.getcwd(), "tmp", "vouchers"))
+
+    try:
+        return db.load(imagePath)
+    except Exception as e:
+        print(f"❌\tError loading voucher JSON: {str(e)}", flush=True)
+        return None

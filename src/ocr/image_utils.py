@@ -59,13 +59,13 @@ def split_image(
         if mode == "halves":
             # Left half
             left = img.crop((0, 0, width // 2, height))
-            left_path = os.path.join(hash_dir, "half_left.png")
+            left_path = get_relative_path(hash_dir, "half_left.png")
             left.save(left_path)
             splits.append(left)
             split_paths.append(left_path)
             # Right half
             right = img.crop((width // 2, 0, width, height))
-            right_path = os.path.join(hash_dir, "half_right.png")
+            right_path = get_relative_path(hash_dir, "half_right.png")
             right.save(right_path)
             splits.append(right)
             split_paths.append(right_path)
@@ -74,25 +74,25 @@ def split_image(
             mid_height = height // 2
             # Top-left quarter
             q1 = img.crop((0, 0, mid_width, mid_height))
-            q1_path = os.path.join(hash_dir, "quarter_1.png")
+            q1_path = get_relative_path(hash_dir, "quarter_1.png")
             q1.save(q1_path)
             splits.append(q1)
             split_paths.append(q1_path)
             # Top-right quarter
             q2 = img.crop((mid_width, 0, width, mid_height))
-            q2_path = os.path.join(hash_dir, "quarter_2.png")
+            q2_path = get_relative_path(hash_dir, "quarter_2.png")
             q2.save(q2_path)
             splits.append(q2)
             split_paths.append(q2_path)
             # Bottom-left quarter
             q3 = img.crop((0, mid_height, mid_width, height))
-            q3_path = os.path.join(hash_dir, "quarter_3.png")
+            q3_path = get_relative_path(hash_dir, "quarter_3.png")
             q3.save(q3_path)
             splits.append(q3)
             split_paths.append(q3_path)
             # Bottom-right quarter
             q4 = img.crop((mid_width, mid_height, width, height))
-            q4_path = os.path.join(hash_dir, "quarter_4.png")
+            q4_path = get_relative_path(hash_dir, "quarter_4.png")
             q4.save(q4_path)
             splits.append(q4)
             split_paths.append(q4_path)
@@ -137,9 +137,9 @@ def dewarp_image(image: Union[str, Image.Image]) -> tuple[Image.Image, str] | No
         )
 
         # Optionally save thresholded image for debugging
-        debug_dir = os.path.join("tmp", "dewarp_debug")
+        debug_dir = get_relative_path("tmp", "dewarp_debug")
         os.makedirs(debug_dir, exist_ok=True)
-        debug_thresh_path = os.path.join(
+        debug_thresh_path = get_relative_path(
             debug_dir, f"{unique_hash(image_path)}_thresh.png"
         )
         cv2.imwrite(debug_thresh_path, thresh)
@@ -201,7 +201,7 @@ def dewarp_image(image: Union[str, Image.Image]) -> tuple[Image.Image, str] | No
             return dewarped_img, output_path
         else:
             # Optionally save the contour image for debugging
-            debug_contour_path = os.path.join(
+            debug_contour_path = get_relative_path(
                 debug_dir, f"{unique_hash(image_path)}_contours.png"
             )
             contour_img = img.copy()
@@ -233,12 +233,12 @@ def rotate_image(image: Union[str, Image.Image]) -> list[tuple[Image.Image, int,
             safe_print("❌\tInvalid input type for rotate_image.")
             return []
 
-        hash_dir = os.path.join("tmp", "rotate", unique_hash(image_path))
+        hash_dir = get_relative_path("tmp", "rotate", unique_hash(image_path))
         os.makedirs(hash_dir, exist_ok=True)
         rotated_images = []
         for angle in [0, 90, 180, 270]:
             rotated = img.rotate(angle, expand=True)
-            save_path = os.path.join(hash_dir, f"angle_{angle}.png")
+            save_path = get_relative_path(hash_dir, f"angle_{angle}.png")
             rotated.save(save_path)
             rotated_images.append((rotated, angle, save_path))
         return rotated_images

@@ -42,22 +42,15 @@ export function uploadRoute(app) {
       // Add OCR job to the queue
       const job = await ocrQueue.add({ imagePath });
 
-      // Wait for job completion and respond
-      job
-        .finished()
-        .then((result) => {
-          res.json({
-            text: result.text.trim(),
-            filename: req.file.originalname
-          });
-        })
-        .catch((error) => {
-          console.error('OCR Error:', error);
-          res.status(500).send('Error processing the image.');
-        });
+      // Wait for job completion and respond (fully async/await)
+      const result = await job.finished();
+      res.json({
+        text: result.text.trim(),
+        filename: req.file.originalname
+      });
     } catch (error) {
-      console.error('Error:', error);
-      res.status(500).send('An error occurred while processing the image.');
+      console.error('OCR Error:', error);
+      res.status(500).send('Error processing the image.');
     }
   });
 }

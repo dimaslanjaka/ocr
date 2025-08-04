@@ -39,7 +39,8 @@ def focus_extract_text_from_image(image_path: str) -> str:
         if angle is not None:
             img = Image.open(image_path)
             img = img.rotate(-angle, expand=True)
-            image_path = get_relative_path("tmp/fixed/corrected_image.png")
+            basename = os.path.basename(image_path)
+            image_path = get_relative_path(f"tmp/fixed/{basename}")
             img.save(image_path)
     dewarp_result = dewarp_image(image_path)
     if dewarp_result is None:

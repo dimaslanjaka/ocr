@@ -41,6 +41,7 @@ def focus_extract_text_from_image(image_path: str) -> str:
             img = img.rotate(-angle, expand=True)
             basename = os.path.basename(image_path)
             image_path = get_relative_path(f"tmp/fixed/{basename}")
+            os.makedirs(os.path.dirname(image_path), exist_ok=True)
             img.save(image_path)
     dewarp_result = dewarp_image(image_path)
     if dewarp_result is None:

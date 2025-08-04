@@ -19,7 +19,7 @@
     "jsonc-parser": "^3.3.1",
     "multer": "^2.0.2",
     "node-tesseract-ocr": "^2.2.1",
-    "sbg-utility": "^2.0.8",
+    "sbg-utility": "^2.0.9",
     "sharp": "^0.34.3",
     "tesseract.js": "^6.0.1",
     "upath": "^2.0.1",
@@ -59,7 +59,8 @@
   "resolutions": {
     "binary-collections": "https://github.com/dimaslanjaka/bin/raw/4f7a91de49cc841de80e6d24848d34772460b7e0/releases/bin.tgz",
     "cross-spawn": "https://github.com/dimaslanjaka/node-cross-spawn/raw/80999ac7a7031a81e11ddb5fab0f8ba433041c98/release/cross-spawn.tgz",
-    "git-command-helper": "https://github.com/dimaslanjaka/git-command-helper/raw/47133aa918c1292c15949c7f190be9cb302cd6f4/release/git-command-helper.tgz"
+    "git-command-helper": "https://github.com/dimaslanjaka/git-command-helper/raw/47133aa918c1292c15949c7f190be9cb302cd6f4/release/git-command-helper.tgz",
+    "sbg-utility": "https://github.com/dimaslanjaka/static-blog-generator/raw/5230e9a1ede790b21574c1d00147c4bbdf6b0a05/packages/sbg-utility/release/sbg-utility.tgz"
   },
   "packageManager": "yarn@4.9.2"
 }

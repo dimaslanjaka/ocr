@@ -13,6 +13,7 @@ import { WebSocketServer } from 'ws';
 import { indexFO, liveFO } from './src/routes/frontend.js';
 import { uploadRoute } from './src/routes/upload.js';
 import { urlOcrRoute } from './src/routes/url.js';
+import { collectRouter } from './src/routes/collect.js';
 
 // ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -168,6 +169,7 @@ app.get('/favicon.ico', (req, res) => {
 app.get('/', indexFO);
 app.get('/url', urlOcrRoute);
 app.get('/live', liveFO);
+app.router.use('/collect', collectRouter);
 uploadRoute(app);
 
 // Start server

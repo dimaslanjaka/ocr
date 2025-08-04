@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Database Collector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://rawcdn.githack.com/dimaslanjaka/Web-Manajemen/0f634f242ff259087c9fe176e8f28ccaebb5c015/css/all.min.css" />
+  </head>
+  <body>
+    <pre id="output" class="bg-gray-100 p-4 rounded text-xs whitespace-pre-wrap"></pre>
+    <script>
+      async function fetchAndDisplay() {
+        try {
+          const res = await fetch('/collect/get', { method: 'POST' });
+          const text = await res.text();
+          document.getElementById('output').textContent = text;
+        } catch (e) {
+          document.getElementById('output').textContent = 'Error: ' + e;
+        }
+        setTimeout(fetchAndDisplay, 3000);
+      }
+      fetchAndDisplay();
+    </script>
+  </body>
+</html>

@@ -77,6 +77,7 @@ def _log_error(msg):
 def build_scanner():
     filename = "vscan.exe" if ISWIN else "vscan"
     release_dir = os.path.join(__dirname, "/../releases")
+    release_path = os.path.join(release_dir, filename)
     dist_path = os.path.join(__dirname, "/../dist", filename)
     nuitka_cmd = [
         PYTHON_CMD,
@@ -103,7 +104,7 @@ def build_scanner():
     else:
         # Copy the dist binary to release directory
         os.makedirs(release_dir, exist_ok=True)
-        shutil.copy2(dist_path, release_dir)
+        shutil.copy2(dist_path, release_path)
 
 if __name__ == "__main__":
     build_scanner()

@@ -1,6 +1,9 @@
+import './src/shim.js';
+import 'dotenv/config';
+
+///
 import { spawn } from 'child_process';
 import { bin, install } from 'cloudflared';
-import 'dotenv/config';
 import express from 'express';
 import fs from 'fs';
 import http from 'http';

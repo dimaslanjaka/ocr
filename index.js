@@ -157,6 +157,9 @@ const startCloudflared = () => {
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
+app.get('/favicon.ico', (req, res) => {
+  return res.sendFile(path.join(__dirname + '/public/favicon.ico'));
+});
 
 // Routes
 app.get('/', indexFO);

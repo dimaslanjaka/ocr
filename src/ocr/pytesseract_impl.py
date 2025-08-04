@@ -68,7 +68,7 @@ def split_and_extract_text_from_image(image_path: str) -> str:
     return "\n".join(all_text)
 
 if __name__ == "__main__":
-    voucher_path = "test/fixtures/voucher - normalized rotation.jpeg"
+    voucher_path = "test/fixtures/voucher-fix.jpeg"
     extract = split_and_extract_text_from_image(voucher_path)
     result = extract_voucher_codes(extract)
     try:

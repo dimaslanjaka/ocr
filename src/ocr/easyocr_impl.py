@@ -110,7 +110,7 @@ def main(voucher_path):
     """Main function to extract text from voucher image"""
 
     if not voucher_path:
-        voucher_path = get_relative_path("test/fixtures/voucher - normalized rotation.jpeg")
+        voucher_path = get_relative_path("test/fixtures/voucher-fix.jpeg")
         print("Using default voucher image path:", voucher_path)
 
     safe_print("🚀\tStarting Voucher Text Extraction")
@@ -185,16 +185,16 @@ def main(voucher_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract text from voucher images using OCR')
     parser.add_argument('-f', '--file',
-                      default='test/fixtures/voucher - normalized rotation.jpeg',
-                      help='Path to the voucher image file (default: test/fixtures/voucher - normalized rotation.jpeg)')
+                      default='test/fixtures/voucher-fix.jpeg',
+                      help='Path to the voucher image file (default: test/fixtures/voucher-fix.jpeg)')
 
     args = parser.parse_args()
     main(args.file)
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Extract text from voucher images using OCR')
     parser.add_argument('-f', '--file',
-                      default='test/fixtures/voucher - normalized rotation.jpeg',
-                      help='Path to the voucher image file (default: test/fixtures/voucher - normalized rotation.jpeg)')
+                      default='test/fixtures/voucher-fix.jpeg',
+                      help='Path to the voucher image file (default: test/fixtures/voucher-fix.jpeg)')
 
     args = parser.parse_args()
     main(args.file)

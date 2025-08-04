@@ -70,8 +70,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "-f",
         "--file",
-        default=get_relative_path("test/fixtures/voucher - normalized rotation.jpeg"),
-        help="Path to the voucher image file (default: test/fixtures/voucher - normalized rotation.jpeg)",
+        default=get_relative_path("test/fixtures/voucher-fix.jpeg"),
+        help="Path to the voucher image file",
     )
     args = parser.parse_args()
     voucher_path = args.file

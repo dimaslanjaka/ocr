@@ -4,7 +4,7 @@ import { splitImage } from './split-image.js';
 import { optimizeForOCR } from './optimize-image.js';
 
 (async () => {
-  const inputPath = path.join(process.cwd(), 'test', 'fixtures', 'voucher - normalized rotation.jpeg');
+  const inputPath = path.join(process.cwd(), 'test', 'fixtures', 'voucher-fix.jpeg');
   const outputDir = path.join(process.cwd(), 'tmp');
   const split = await splitImage(inputPath, outputDir);
 

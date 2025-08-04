@@ -96,7 +96,7 @@ export async function splitImage(inputPath, outputDir, options = {}) {
 }
 
 // Example usage with custom options
-const inputPath = path.join(process.cwd(), 'test', 'fixtures', 'voucher - normalized rotation.jpeg');
+const inputPath = path.join(process.cwd(), 'test', 'fixtures', 'voucher-fix.jpeg');
 const outputDir = path.join(process.cwd(), 'tmp');
 
 // Default horizontal split

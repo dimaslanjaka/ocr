@@ -105,7 +105,7 @@ async function processImageToText(inputPath, useAdvanced = false) {
  */
 async function testOCR() {
   try {
-    const inputImage = path.join(__dirname, 'fixtures/voucher - normalized rotation.jpeg');
+    const inputImage = path.join(__dirname, 'fixtures/voucher-fix.jpeg');
 
     console.log('Testing standard optimization + OCR...');
     const standardResult = await processImageToText(inputImage, false);
@@ -127,12 +127,12 @@ async function testOCR() {
       ['6035 3939 7924 0371', '1101 3200 0110 0003']
     ];
 
-    const vouchersClean = vouchers.map(v => v[0].replace(/\s/g, ''));
+    const vouchersClean = vouchers.map((v) => v[0].replace(/\s/g, ''));
     const standardClean = standardResult.text.replace(/\s/g, '');
     const advancedClean = advancedResult.text.replace(/\s/g, '');
 
     console.log('\n=== VOUCHER DETECTION ===');
-    console.log('Looking for vouchers:', vouchers.map(v => v[0]).join(', '));
+    console.log('Looking for vouchers:', vouchers.map((v) => v[0]).join(', '));
 
     let standardFound = 0;
     let advancedFound = 0;

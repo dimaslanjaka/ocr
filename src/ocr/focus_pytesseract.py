@@ -35,7 +35,9 @@ def focus_extract_text_from_image(image_path: str) -> str:
     # Detect if the image is upright
     if not is_image_upright(image_path):
         # Rotate the image to make it upright
+        print("Image is not upright, correcting...")
         angle = detect_image_skew_angle(image_path)
+        print(f"Detected skew angle: {angle} degrees")
         if angle is not None:
             img = Image.open(image_path)
             img = img.rotate(-angle, expand=True)
@@ -43,6 +45,7 @@ def focus_extract_text_from_image(image_path: str) -> str:
             image_path = get_relative_path(f"tmp/fixed/{basename}")
             os.makedirs(os.path.dirname(image_path), exist_ok=True)
             img.save(image_path)
+            print(f"Corrected image saved to: {image_path}")
     dewarp_result = dewarp_image(image_path)
     if dewarp_result is None:
         img = Image.open(image_path)

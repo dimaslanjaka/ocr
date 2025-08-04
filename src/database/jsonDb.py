@@ -1,6 +1,8 @@
 import os
 import hashlib
+import glob
 import jsonpickle
+from typing import Any, AsyncGenerator, List
 
 
 class JsonDB:
@@ -24,11 +26,9 @@ class JsonDB:
         """
         return hashlib.md5(id.encode("utf-8")).hexdigest()
 
-    def save(self, id: str, data):
+    def save(self, id: str, data: Any) -> None:
         """
         Save data to a JSON file with the given id.
-        :param id: Identifier for the JSON file (without extension).
-        :param data: Data to save (can include circular references).
         """
         hashed_id = self._hash(id)
         save_path = os.path.join(self.directory, f"{hashed_id}.json")
@@ -37,11 +37,9 @@ class JsonDB:
             with open(save_path, "w", encoding="utf-8") as f:
                 f.write(encoded)
 
-    def load(self, id: str):
+    def load(self, id: str) -> Any:
         """
         Load data from a JSON file with the given id.
-        :param id: Identifier for the JSON file (without extension).
-        :return: The parsed data (with circular references restored).
         """
         hashed_id = self._hash(id)
         load_path = os.path.join(self.directory, f"{hashed_id}.json")
@@ -50,12 +48,35 @@ class JsonDB:
         with open(load_path, "r", encoding="utf-8") as f:
             return jsonpickle.decode(f.read())
 
-    def delete(self, id: str):
+    def delete(self, id: str) -> None:
         """
         Delete a JSON file with the given id.
-        :param id: Identifier for the JSON file (without extension).
         """
         hashed_id = self._hash(id)
         delete_path = os.path.join(self.directory, f"{hashed_id}.json")
         if os.path.exists(delete_path):
             os.remove(delete_path)
+
+    def loadAll(self) -> List[Any]:
+        """
+        Load all JSON files in the database directory.
+        """
+        files = glob.glob("**/*.json", root_dir=self.directory, recursive=True)
+        results = []
+        for file in files:
+            file_path = os.path.join(self.directory, file)
+            with open(file_path, "r", encoding="utf-8") as f:
+                results.append(jsonpickle.decode(f.read()))
+        return results
+
+    async def loadAllStream(self) -> AsyncGenerator[Any, None]:
+        """
+        Asynchronously load all JSON files in the database directory, yielding each parsed object.
+        """
+        files = glob.glob("**/*.json", root_dir=self.directory, recursive=True)
+        for file in files:
+            file_path = os.path.join(self.directory, file)
+            # Async file reading
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = f.read()
+            yield jsonpickle.decode(data)

@@ -53,6 +53,7 @@ def detect_docker():
 
     return False
 
+
 cpu_cores = os.cpu_count() or 1
 IS_DOCKER = detect_docker()
 ISWIN = os.name == "nt"
@@ -71,14 +72,26 @@ else:
 def _log_info(msg):
     sys.stdout.write(f"[INFO] {msg}\n")
 
+
 def _log_error(msg):
     sys.stderr.write(f"[ERROR] {msg}\n")
+
 
 def build_scanner():
     filename = "vscan.exe" if ISWIN else "vscan"
     release_dir = os.path.join(__dirname, "/../releases")
     release_path = os.path.join(release_dir, filename)
     dist_path = os.path.join(__dirname, "/../dist", filename)
+    if ISWIN:
+        nuitka_os_args = [
+            f"--windows-icon-from-ico={ICON}",
+            f"--windows-company-name={COMPANY_NAME}",
+            "--windows-product-name=Voucher Scanner",
+            f"--windows-file-version={VERSION}",
+            "--msvc=latest",
+        ]
+    else:
+        nuitka_os_args = []
     nuitka_cmd = [
         PYTHON_CMD,
         "-m",
@@ -86,17 +99,17 @@ def build_scanner():
         "--onefile",
         "--output-dir=dist",
         f"--output-file={filename}",
-        f"--windows-icon-from-ico={ICON}",
-        f"--windows-company-name={COMPANY_NAME}",
-        "--windows-product-name=Voucher Scanner",
-        f"--windows-file-version={VERSION}",
-        "--msvc=latest",
         "--include-data-file=public/favicon.ico=favicon.ico",
         "--include-data-dir=test/fixtures/=test/fixtures/",
         f"--jobs={cpu_cores}",
+        "--noinclude-unittest-mode=allow",
+        "--experimental=debug-report-traceback",
+        *map(str, nuitka_os_args),
         "src/ocr/focus_pytesseract.py",
     ]
-    _log_info(f"Running Nuitka build: {' '.join(shlex.quote(str(x)) for x in nuitka_cmd)}")
+    _log_info(
+        f"Running Nuitka build: {' '.join(shlex.quote(str(x)) for x in nuitka_cmd)}"
+    )
     result = subprocess.run(nuitka_cmd)
     if result.returncode != 0:
         _log_error("Nuitka build failed")
@@ -105,6 +118,7 @@ def build_scanner():
         # Copy the dist binary to release directory
         os.makedirs(release_dir, exist_ok=True)
         shutil.copy2(dist_path, release_path)
+
 
 if __name__ == "__main__":
     build_scanner()

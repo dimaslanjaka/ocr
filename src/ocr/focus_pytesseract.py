@@ -40,7 +40,7 @@ def focus_extract_text_from_image(image_path: str) -> str:
         print(f"Detected skew angle: {angle} degrees")
         if angle is not None:
             img = Image.open(image_path)
-            img = img.rotate(-angle, expand=True)
+            img = img.rotate(angle, expand=True)
             basename = os.path.basename(image_path)
             image_path = get_relative_path(f"tmp/fixed/{basename}")
             os.makedirs(os.path.dirname(image_path), exist_ok=True)

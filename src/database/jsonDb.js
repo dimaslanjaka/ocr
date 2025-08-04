@@ -1,6 +1,7 @@
-import { jsonParseWithCircularRefs, jsonStringifyWithCircularRefs, writefile } from 'sbg-utility';
-import path from 'path';
+import MD5 from 'crypto-js/md5';
 import fs from 'fs-extra';
+import path from 'path';
+import { jsonParseWithCircularRefs, jsonStringifyWithCircularRefs, writefile } from 'sbg-utility';
 
 /**
  * Simple JSON file database with circular reference support.
@@ -27,8 +28,10 @@ class JsonDB {
    * @returns {void}
    */
   save(id, data) {
+    id = this.#hash(id);
     const savePath = path.join(this.directory, `${id}.json`);
-    writefile(savePath, jsonStringifyWithCircularRefs(data));
+    const encoded = jsonStringifyWithCircularRefs(data);
+    if (typeof encoded === 'string') writefile(savePath, encoded);
   }
 
   /**
@@ -38,6 +41,7 @@ class JsonDB {
    * @returns {T} The parsed data (with circular references restored).
    */
   load(id) {
+    id = this.#hash(id);
     const loadPath = path.join(this.directory, `${id}.json`);
     const parse = jsonParseWithCircularRefs(fs.readFileSync(loadPath, 'utf8'));
     return parse;
@@ -49,10 +53,20 @@ class JsonDB {
    * @returns {void}
    */
   delete(id) {
+    id = this.#hash(id);
     const deletePath = path.join(this.directory, `${id}.json`);
     if (fs.existsSync(deletePath)) {
       fs.rmSync(deletePath);
     }
+  }
+
+  /**
+   * Generate an MD5 hash for the given id.
+   * @param {string} id - The input string to hash.
+   * @returns {string} The MD5 hash of the id.
+   */
+  #hash(id) {
+    return MD5(id).toString();
   }
 }
 

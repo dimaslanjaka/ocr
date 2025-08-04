@@ -10,20 +10,64 @@
       rel="stylesheet"
       href="https://rawcdn.githack.com/dimaslanjaka/Web-Manajemen/0f634f242ff259087c9fe176e8f28ccaebb5c015/css/all.min.css" />
   </head>
-  <body>
-    <pre id="output" class="bg-gray-100 p-4 rounded text-xs whitespace-pre-wrap"></pre>
+  <body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen flex flex-col items-center justify-center">
+    <div class="w-full max-w-2xl mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg border border-gray-200">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-800 flex items-center">
+          <i class="fa-solid fa-database mr-3 text-blue-500"></i> Database Collector
+        </h1>
+        <button id="downloadCsvBtn" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors">
+          <i class="fa-solid fa-download"></i>
+          <span>CSV</span>
+        </button>
+      </div>
+      <div class="mb-2 text-gray-600 text-sm">Live voucher data updates every 3 seconds.</div>
+      <pre id="output" class="bg-gray-50 p-4 rounded-lg text-xs whitespace-pre-wrap border border-gray-200 h-96 overflow-auto"></pre>
+    </div>
     <script>
+      let latestVouchers = [];
       async function fetchAndDisplay() {
         try {
           const res = await fetch('/collect/get', { method: 'POST' });
-          const text = await res.text();
-          document.getElementById('output').textContent = text;
+          const vouchers = await res.json();
+          latestVouchers = vouchers;
+          document.getElementById('output').textContent = JSON.stringify(vouchers, null, 2);
         } catch (e) {
           document.getElementById('output').textContent = 'Error: ' + e;
         }
         setTimeout(fetchAndDisplay, 3000);
       }
       fetchAndDisplay();
+
+      function arrayToCsv(arr) {
+        if (!Array.isArray(arr) || arr.length === 0) return '';
+        // If array of objects, use keys as header
+        if (typeof arr[0] === 'object' && arr[0] !== null) {
+          const keys = Object.keys(arr[0]);
+          const header = keys.map(k => '"' + k.replace(/"/g, '""') + '"').join(',');
+          const rows = arr.map(obj => keys.map(k => '"' + String(obj[k] ?? '').replace(/"/g, '""') + '"').join(','));
+          return [header, ...rows].join("\n");
+        }
+        // Fallback: array of primitives
+        return arr.map(v => '"' + String(v).replace(/"/g, '""') + '"').join("\n");
+      }
+
+      document.getElementById('downloadCsvBtn').addEventListener('click', function() {
+        if (!Array.isArray(latestVouchers) || latestVouchers.length === 0) {
+          alert('No vouchers to export.');
+          return;
+        }
+        const csvContent = arrayToCsv(latestVouchers);
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'vouchers.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
     </script>
   </body>
 </html>

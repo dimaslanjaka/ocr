@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import JsonDB from './jsonDb.js';
+import { md5 } from 'sbg-utility';
 
 // Banned voucher codes (normalized, no spaces)
 const BANNED_VOUCHERS = new Set(['1234123412341234', '1234123422341234']);
@@ -30,9 +31,10 @@ export function extractVoucherCodes(text, outputDir) {
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
       }
-      fs.writeFileSync(path.join(outputDir, 'debug_text.txt'), text, 'utf8');
-      fs.writeFileSync(path.join(outputDir, 'debug_regex.txt'), regex.toString(), 'utf8');
-      fs.writeFileSync(path.join(outputDir, 'debug_result.json'), JSON.stringify(result, null, 2), 'utf8');
+      const filename = md5(text);
+      fs.writeFileSync(path.join(outputDir, `${filename}_text.txt`), text, 'utf8');
+      fs.writeFileSync(path.join(outputDir, `${filename}_regex.txt`), regex.toString(), 'utf8');
+      fs.writeFileSync(path.join(outputDir, `${filename}_result.json`), JSON.stringify(result, null, 2), 'utf8');
     } catch (e) {
       // Don't throw, just print error
       safePrint(`❌\tError writing debug files: ${e.message}`, true);

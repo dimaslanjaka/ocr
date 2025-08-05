@@ -2,6 +2,7 @@ import sys
 import os
 import re
 import json
+import hashlib
 from typing import Any, List, Optional
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -21,14 +22,20 @@ BANNED_VOUCHERS = {
     '1234123412341234'
 }
 
+def md5(text: str) -> str:
+    """Generate MD5 hash for a given string."""
+    return hashlib.md5(text.encode("utf-8")).hexdigest()
+
+
 def extract_voucher_codes(text: str, output_dir: Optional[str] = None) -> List[str]:
     """
     Extract voucher codes from the given text, optionally outputting debug info to output_dir.
     """
-    # Simple regex to find alphanumeric codes, adjust as needed for your voucher format
+    # Simple regex to find numeric voucher codes
     regex = r"\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b"
     matches = re.findall(regex, text) or []
 
+    # Normalize, filter, and deduplicate
     seen = set()
     result = []
     for code in matches:
@@ -42,16 +49,18 @@ def extract_voucher_codes(text: str, output_dir: Optional[str] = None) -> List[s
     if output_dir:
         try:
             os.makedirs(output_dir, exist_ok=True)
-            with open(os.path.join(output_dir, "debug_text.txt"), "w", encoding="utf-8") as f:
+            filename_hash = md5(text)
+            with open(os.path.join(output_dir, f"{filename_hash}_text.txt"), "w", encoding="utf-8") as f:
                 f.write(text)
-            with open(os.path.join(output_dir, "debug_regex.txt"), "w", encoding="utf-8") as f:
+            with open(os.path.join(output_dir, f"{filename_hash}_regex.txt"), "w", encoding="utf-8") as f:
                 f.write(regex)
-            with open(os.path.join(output_dir, "debug_result.json"), "w", encoding="utf-8") as f:
+            with open(os.path.join(output_dir, f"{filename_hash}_result.json"), "w", encoding="utf-8") as f:
                 json.dump(result, f, indent=2, ensure_ascii=False)
         except Exception as e:
             safe_print(f"❌\tError writing debug files: {e}", True)
 
     return result
+
 def safe_print(message, file=sys.stderr):
     """Safely print messages, handling encoding issues"""
     try:

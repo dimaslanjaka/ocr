@@ -31,11 +31,11 @@ def extract_voucher_codes(text: str, output_dir: Optional[str] = None) -> List[s
     """
     Extract voucher codes from the given text, optionally outputting debug info to output_dir.
     """
-    # Simple regex to find numeric voucher codes
+    # Simple regex to find voucher codes
     regex = r"\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b"
     matches = re.findall(regex, text) or []
 
-    # Normalize, filter, and deduplicate
+    # Normalize: remove spaces, ensure length 16, skip banned, remove duplicates
     seen = set()
     result = []
     for code in matches:
@@ -50,12 +50,9 @@ def extract_voucher_codes(text: str, output_dir: Optional[str] = None) -> List[s
         try:
             os.makedirs(output_dir, exist_ok=True)
             filename_hash = md5(text)
-            with open(os.path.join(output_dir, f"{filename_hash}_text.txt"), "w", encoding="utf-8") as f:
-                f.write(text)
-            with open(os.path.join(output_dir, f"{filename_hash}_regex.txt"), "w", encoding="utf-8") as f:
-                f.write(regex)
-            with open(os.path.join(output_dir, f"{filename_hash}_result.json"), "w", encoding="utf-8") as f:
-                json.dump(result, f, indent=2, ensure_ascii=False)
+            debug_path = os.path.join(output_dir, f"{filename_hash}.txt")
+            with open(debug_path, "w", encoding="utf-8") as f:
+                f.write(f"{regex}\n\n{text}\n\n{json.dumps(result, indent=2, ensure_ascii=False)}")
         except Exception as e:
             safe_print(f"❌\tError writing debug files: {e}", True)
 

@@ -32,9 +32,11 @@ export function extractVoucherCodes(text, outputDir) {
         fs.mkdirSync(outputDir, { recursive: true });
       }
       const filename = md5(text);
-      fs.writeFileSync(path.join(outputDir, `${filename}_text.txt`), text, 'utf8');
-      fs.writeFileSync(path.join(outputDir, `${filename}_regex.txt`), regex.toString(), 'utf8');
-      fs.writeFileSync(path.join(outputDir, `${filename}_result.json`), JSON.stringify(result, null, 2), 'utf8');
+      fs.writeFileSync(
+        path.join(outputDir, `${filename}.txt`),
+        `${regex}\n\n${text}\n\n${JSON.stringify(result, null, 2)}`,
+        'utf8'
+      );
     } catch (e) {
       // Don't throw, just print error
       safePrint(`❌\tError writing debug files: ${e.message}`, true);

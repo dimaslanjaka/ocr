@@ -1,9 +1,6 @@
 import sharp from 'sharp';
 import path from 'upath';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import fs from 'fs-extra';
 
 /**
  * Optimize image for Tesseract OCR
@@ -53,6 +50,7 @@ async function optimizeForOCR(inputPath, outputPath, options = {}) {
     pipeline = pipeline.normalize();
 
     // Save as high-quality PNG
+    fs.ensureDirSync(path.dirname(outputPath));
     await pipeline.png({ quality: 100, compressionLevel: 0 }).toFile(outputPath);
 
     // console.log(`Image optimized for OCR: ${outputPath}`);
@@ -100,8 +98,8 @@ async function testOptimization() {
     console.log('Starting image optimization test...');
 
     // Example usage
-    const inputImage = path.join(__dirname, 'fixtures/voucher-fix.jpeg');
-    const outputImage = path.join(__dirname, 'tmp/optimized-for-ocr.png');
+    const inputImage = path.join(process.cwd(), 'test/fixtures/voucher-fix.jpeg');
+    const outputImage = path.join(process.cwd(), 'tmp/optimized-for-ocr.png');
 
     console.log(`Input: ${inputImage}`);
     console.log(`Output: ${outputImage}`);
@@ -118,7 +116,7 @@ async function testOptimization() {
   }
 }
 
-export { optimizeForOCR, advancedPreprocess, testOptimization };
+export { advancedPreprocess, optimizeForOCR, testOptimization };
 
 // Run test if called directly
 if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {

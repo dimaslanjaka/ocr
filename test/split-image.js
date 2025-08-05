@@ -1,13 +1,13 @@
 import sharp from 'sharp';
-import path from 'path';
-import fs from 'fs';
+import path from 'upath';
+import fs from 'fs-extra';
 
 /**
  * Splits an image into two parts based on specified options
  * @param {string} inputPath - Path to the input image file
  * @param {string} outputDir - Directory where split images will be saved
  * @param {Object} [options={}] - Configuration options for splitting
- * @param {string} [options.direction='horizontal'] - Split direction: 'horizontal' or 'vertical'
+ * @param {'horizontal'|'vertical'} [options.direction='horizontal'] - Split direction: 'horizontal' or 'vertical'
  * @param {number} [options.ratio=0.5] - Split ratio from 0.1 to 0.9 (where to make the split)
  * @param {string} [options.format='png'] - Output format: 'jpeg', 'png', or 'webp'
  * @param {number} [options.quality=90] - Quality for jpeg/webp format (1-100)
@@ -34,9 +34,14 @@ export async function splitImage(inputPath, outputDir, options = {}) {
     direction = 'horizontal', // 'horizontal' or 'vertical'
     ratio = 0.5, // Split ratio (0.1 to 0.9)
     format = 'png', // 'jpeg', 'png', 'webp'
-    quality = 90, // Quality for jpeg/webp
-    suffix = ['left', 'right'] // Custom suffixes for output files
+    quality = 90 // Quality for jpeg/webp
   } = options;
+  let suffix = options.suffix || ['left', 'right'];
+  if (direction == 'vertical' && !options.suffix) {
+    suffix = ['top', 'bottom'];
+  } else if (direction == 'horizontal' && !options.suffix) {
+    suffix = ['left', 'right'];
+  }
 
   // Ensure output directory exists
   if (!fs.existsSync(outputDir)) {

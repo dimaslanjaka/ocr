@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import path from 'path';
+import path from 'upath';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -19,7 +19,7 @@ async function optimizeForOCR(inputPath, outputPath, options = {}) {
     sharpen = true, // Apply sharpening
     denoise = true // Remove noise
   } = options;
-  const imageExtension = path.extname(inputPath).toLowerCase();
+  // const imageExtension = path.extname(inputPath).toLowerCase();
 
   try {
     let pipeline = sharp(inputPath);

@@ -3,11 +3,24 @@ import path from 'path';
 import sharp from 'sharp';
 
 /**
- * Crop an image into several variants: full, top_half, bottom_half, left_half, right_half.
- * @param {string|Buffer} imagePathOrBuffer - Path to image file or Buffer.
- * @returns {Promise<Array<{ name: string, buffer: Buffer, outputPath: string }>>}
+ * Crops an image into several variants and saves them to disk.
+ *
+ * Variants produced:
+ *   - full: the entire image
+ *   - top_half: the top half of the image
+ *   - bottom_half: the bottom half of the image
+ *   - left_half: the left half of the image
+ *   - right_half: the right half of the image
+ *
+ * @async
+ * @param {string|Buffer} imagePathOrBuffer Path to the image file, image URL, or a Buffer containing image data.
+ * @param {string} [outputDir] Optional output directory for cropped images. Defaults to '<cwd>/tmp/crop'.
+ * @returns {Promise<Array<{ name: string, buffer: Buffer, outputPath: string }>>} Resolves with an array of objects for each crop variant:
+ *   - name: the crop variant name
+ *   - buffer: the cropped image as a Buffer
+ *   - outputPath: the file path where the cropped image was saved
  */
-export async function cropImageVariants(imagePathOrBuffer) {
+export async function cropImageVariants(imagePathOrBuffer, outputDir = path.join(process.cwd(), 'tmp/crop')) {
   const image = sharp(imagePathOrBuffer);
   const metadata = await image.metadata();
   const width = metadata.width;
@@ -45,7 +58,6 @@ export async function cropImageVariants(imagePathOrBuffer) {
   const results = [];
   for (const crop of crops) {
     const buf = await sharp(imagePathOrBuffer).extract(crop.region).toBuffer();
-    const outputDir = path.join(process.cwd(), 'tmp', 'crop');
     await fs.mkdir(outputDir, { recursive: true });
     const outputPath = path.join(outputDir, `${baseName.replace(/\.[^.]+$/, '')}_${crop.name}.png`);
     await fs.writeFile(outputPath, buf);

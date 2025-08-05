@@ -1,11 +1,10 @@
+import fs from 'fs-extra';
 import Tesseract, { createWorker } from 'tesseract.js';
 import path from 'upath';
 import { extractVoucherCodes } from '../src/database/VoucherDatabase.js';
-import expectedVouchersJson from './fixtures/expected.json' with { type: 'json' };
-import { optimizeForOCR } from './optimize-image.js';
-import { splitImage } from './split-image.js';
 import { cropImageVariants } from '../src/ocr/image_utils.js';
-import { fs } from 'sbg-utility';
+import expectedVouchersJson from './fixtures/expected.json' with { type: 'json' };
+import { optimizeForOCR } from '../src/ocr/image_utils/optimize-image.js';
 
 /**
  * Shared Tesseract worker instance.
@@ -42,15 +41,18 @@ async function stopWorker(exit = false, exitCode = 0) {
     worker = undefined;
   }
   if (exit) {
+    // process.exit should only be called after all async cleanup is done
     process.exit(exitCode);
   }
 }
 
-// Ensure worker is terminated on process exit
-process.on('exit', stopWorker);
-process.on('SIGINT', async () => {
-  stopWorker();
-  process.exit();
+// Remove 'exit' handler (cannot await async cleanup)
+// Handle SIGINT and SIGTERM for graceful shutdown
+['SIGINT', 'SIGTERM'].forEach((signal) => {
+  process.on(signal, async () => {
+    await stopWorker();
+    process.exit(0);
+  });
 });
 
 /**
@@ -65,39 +67,36 @@ process.on('SIGINT', async () => {
     .map((voucher) => Object.values(voucher))
     .flat()
     .map((code) => code.replace(/\s/g, ''));
-  const collectedVouchers = new Set();
+  const collectedVouchers = [];
   const inputPath = path.join(process.cwd(), 'test/fixtures/voucher-fix.jpeg');
   const outputDir = path.join(process.cwd(), 'tmp/tesseract');
 
-  const directions = ['horizontal', 'vertical'];
-  for (const direction of directions) {
-    const split = await splitImage(inputPath, outputDir, { direction });
-
-    for (const part of split) {
-      const result = await img2text(part);
-      result.optimizedVouchers.forEach((voucher) => collectedVouchers.add(voucher));
-      result.normalVouchers.forEach((voucher) => collectedVouchers.add(voucher));
-    }
-  }
-
-  const cropVariants = await cropImageVariants(inputPath);
+  const cropVariants = await cropImageVariants(inputPath, outputDir);
   for (const variant of cropVariants) {
     const result = await img2text(variant.outputPath);
-    result.optimizedVouchers.forEach((voucher) => collectedVouchers.add(voucher));
-    result.normalVouchers.forEach((voucher) => collectedVouchers.add(voucher));
+    result.optimizedVouchers.forEach((voucher) => collectedVouchers.push(voucher));
+    result.normalVouchers.forEach((voucher) => collectedVouchers.push(voucher));
   }
 
   const result = await img2text(inputPath);
-  result.optimizedVouchers.forEach((voucher) => collectedVouchers.add(voucher));
-  result.normalVouchers.forEach((voucher) => collectedVouchers.add(voucher));
-  console.log(`Collected Vouchers:`, Array.from(collectedVouchers));
-  const missing = expectedVouchers.filter((v) => !collectedVouchers.has(v));
+  result.optimizedVouchers.forEach((voucher) => collectedVouchers.push(voucher));
+  result.normalVouchers.forEach((voucher) => collectedVouchers.push(voucher));
+
+  // Summarize collected vouchers
+  const uniqueVouchers = new Set(collectedVouchers);
+  console.log(`Collected Vouchers:`, uniqueVouchers);
+  const missing = expectedVouchers.filter((v) => !uniqueVouchers.has(v));
   if (missing.length > 0) {
     console.log('Missing expected vouchers:', missing);
-  } else {
-    console.log('All expected vouchers were found.');
   }
-  stopWorker(true);
+  const unexpected = Array.from(uniqueVouchers).filter((v) => !expectedVouchers.includes(v));
+  if (unexpected.length > 0) {
+    console.log('Vouchers not listed in expected:', unexpected);
+  }
+  console.log(`Total collected vouchers: ${uniqueVouchers.size}`);
+  console.log(`Total expected vouchers: ${expectedVouchers.length}`);
+  await stopWorker();
+  process.exit(0);
 })();
 
 /**
@@ -123,7 +122,7 @@ async function img2text(imagePath) {
   return {
     optimizedText: optimizedOCR.data.text,
     normalText: normalOCR.data.text,
-    optimizedVouchers: extractVoucherCodes(optimizedOCR.data.text),
-    normalVouchers: extractVoucherCodes(normalOCR.data.text)
+    optimizedVouchers: extractVoucherCodes(optimizedOCR.data.text, 'tmp/extract-vouchers'),
+    normalVouchers: extractVoucherCodes(normalOCR.data.text, 'tmp/extract-vouchers')
   };
 }

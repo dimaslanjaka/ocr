@@ -1,6 +1,9 @@
 import sharp from 'sharp';
+import fs from 'fs-extra';
+import path from 'path';
 
 export async function thresholdImage(inputPath, outputPath, level = 0.5) {
+  fs.ensureDirSync(path.dirname(outputPath));
   const image = sharp(inputPath);
   const { data, info } = await image.raw().toBuffer({ resolveWithObject: true });
 

@@ -1,7 +1,9 @@
 import { createCanvas, loadImage } from 'canvas';
-import fs from 'fs';
+import fs from 'fs-extra';
+import path from 'path';
 
 export async function thresholdImage(inputPath, outputPath) {
+  fs.ensureDirSync(path.dirname(outputPath));
   const img = await loadImage(inputPath);
   const canvas = createCanvas(img.width, img.height);
   const ctx = canvas.getContext('2d');

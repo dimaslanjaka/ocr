@@ -2,7 +2,7 @@ import path from 'path';
 import JsonDB from './jsonDb.js';
 
 // Banned voucher codes (normalized, no spaces)
-const BANNED_VOUCHERS = new Set(['1234123412341234']);
+const BANNED_VOUCHERS = new Set(['1234123412341234', '1234123422341234']);
 
 /**
  * Extract voucher codes from the given text.

@@ -1,27 +1,44 @@
 import path from 'path';
+import fs from 'fs-extra';
 import JsonDB from './jsonDb.js';
 
 // Banned voucher codes (normalized, no spaces)
 const BANNED_VOUCHERS = new Set(['1234123412341234', '1234123422341234']);
 
 /**
- * Extract voucher codes from the given text.
+ * Extract voucher codes from the given text, optionally outputting debug info to outputDir.
  * @param {string} text
+ * @param {string} [outputDir] - Optional directory to write debug files (text, regex, result)
  * @returns {string[]}
  */
-export function extractVoucherCodes(text) {
+export function extractVoucherCodes(text, outputDir) {
   // Simple regex to find alphanumeric codes, adjust as needed for your voucher format
   const regex = /\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b/g;
   const matches = text.match(regex) || [];
   // Normalize: remove all spaces, ensure 16 digits, skip banned vouchers, remove duplicates
   const seen = new Set();
-  return matches
+  const result = matches
     .map((code) => code.replace(/\s+/g, ''))
     .filter((code) => {
       if (code.length !== 16 || BANNED_VOUCHERS.has(code) || seen.has(code)) return false;
       seen.add(code);
       return true;
     });
+
+  if (outputDir) {
+    try {
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+      fs.writeFileSync(path.join(outputDir, 'debug_text.txt'), text, 'utf8');
+      fs.writeFileSync(path.join(outputDir, 'debug_regex.txt'), regex.toString(), 'utf8');
+      fs.writeFileSync(path.join(outputDir, 'debug_result.json'), JSON.stringify(result, null, 2), 'utf8');
+    } catch (e) {
+      // Don't throw, just print error
+      safePrint(`❌\tError writing debug files: ${e.message}`, true);
+    }
+  }
+  return result;
 }
 
 export function safePrint(message, isError = false) {

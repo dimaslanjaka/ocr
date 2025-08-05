@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import json
 from typing import Any, List, Optional
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -20,26 +21,37 @@ BANNED_VOUCHERS = {
     '1234123412341234'
 }
 
-def extract_voucher_codes(text: str) -> List[str]:
-    """Extract voucher codes from the given text."""
+def extract_voucher_codes(text: str, output_dir: Optional[str] = None) -> List[str]:
+    """
+    Extract voucher codes from the given text, optionally outputting debug info to output_dir.
+    """
     # Simple regex to find alphanumeric codes, adjust as needed for your voucher format
-    regex = r'\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b'
-    codes = re.findall(regex, text)
-    # Normalize: remove all spaces, ensure 16 digits, skip banned vouchers
-    normalized_codes = [
-        re.sub(r'\s+', '', code)
-        for code in codes
-        if len(re.sub(r'\s+', '', code)) == 16 and re.sub(r'\s+', '', code) not in BANNED_VOUCHERS
-    ]
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_codes = []
-    for code in normalized_codes:
-        if code not in seen:
-            seen.add(code)
-            unique_codes.append(code)
-    return unique_codes
+    regex = r"\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b"
+    matches = re.findall(regex, text) or []
 
+    seen = set()
+    result = []
+    for code in matches:
+        normalized = re.sub(r"\s+", "", code)
+        if len(normalized) != 16 or normalized in BANNED_VOUCHERS or normalized in seen:
+            continue
+        seen.add(normalized)
+        result.append(normalized)
+
+    # Debug file writing if requested
+    if output_dir:
+        try:
+            os.makedirs(output_dir, exist_ok=True)
+            with open(os.path.join(output_dir, "debug_text.txt"), "w", encoding="utf-8") as f:
+                f.write(text)
+            with open(os.path.join(output_dir, "debug_regex.txt"), "w", encoding="utf-8") as f:
+                f.write(regex)
+            with open(os.path.join(output_dir, "debug_result.json"), "w", encoding="utf-8") as f:
+                json.dump(result, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            safe_print(f"❌\tError writing debug files: {e}", True)
+
+    return result
 def safe_print(message, file=sys.stderr):
     """Safely print messages, handling encoding issues"""
     try:

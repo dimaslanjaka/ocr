@@ -55,7 +55,7 @@ async function optimizeForOCR(inputPath, outputPath, options = {}) {
     // Save as high-quality PNG
     await pipeline.png({ quality: 100, compressionLevel: 0 }).toFile(outputPath);
 
-    console.log(`Image optimized for OCR: ${outputPath}`);
+    // console.log(`Image optimized for OCR: ${outputPath}`);
     return outputPath;
   } catch (error) {
     console.error('Error optimizing image:', error);

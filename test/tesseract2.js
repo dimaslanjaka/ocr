@@ -4,6 +4,8 @@ import { extractVoucherCodes } from '../src/database/VoucherDatabase.js';
 import expectedVouchersJson from './fixtures/expected.json' with { type: 'json' };
 import { optimizeForOCR } from './optimize-image.js';
 import { splitImage } from './split-image.js';
+import { cropImageVariants } from '../src/ocr/image_utils.js';
+import { fs } from 'sbg-utility';
 
 /**
  * Shared Tesseract worker instance.
@@ -78,6 +80,13 @@ process.on('SIGINT', async () => {
     }
   }
 
+  const cropVariants = await cropImageVariants(inputPath);
+  for (const variant of cropVariants) {
+    const result = await img2text(variant.outputPath);
+    result.optimizedVouchers.forEach((voucher) => collectedVouchers.add(voucher));
+    result.normalVouchers.forEach((voucher) => collectedVouchers.add(voucher));
+  }
+
   const result = await img2text(inputPath);
   result.optimizedVouchers.forEach((voucher) => collectedVouchers.add(voucher));
   result.normalVouchers.forEach((voucher) => collectedVouchers.add(voucher));
@@ -100,9 +109,10 @@ process.on('SIGINT', async () => {
 async function img2text(imagePath) {
   const optimizedPath = path.join(
     process.cwd(),
-    'tmp/tesseract',
-    'optimized-' + path.basename(imagePath, path.extname(imagePath)) + '.png'
+    'tmp/tesseract/optimized',
+    path.basename(imagePath, path.extname(imagePath)) + '.png'
   );
+  fs.ensureDirSync(path.dirname(optimizedPath));
   const optimize = await optimizeForOCR(imagePath, optimizedPath);
   // Use shared worker
   if (!worker) {

@@ -31,7 +31,7 @@
     "sourceMap": true,
 
     // Specify the directory for emitted files
-    "outDir": "./dist",
+    "outDir": "./tmp/dist",
 
     // Emit compliant JavaScript for iterables, which may be less performant
     "downlevelIteration": true,
@@ -52,7 +52,8 @@
   "include": [
     // Include specific directories and files in the compilation
     "./src",
-    "./index.js"
+    "./index.js",
+    "./test"
   ],
   "exclude": [
     // Exclude specific directories and patterns from the compilation

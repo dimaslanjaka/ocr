@@ -107,4 +107,21 @@ document.addEventListener('DOMContentLoaded', function () {
       fileInput.dispatchEvent(new Event('change'));
     }
   });
+
+  // Handle paste (Ctrl+V) with image in clipboard
+  document.addEventListener('paste', function (e) {
+    if (!e.clipboardData || !e.clipboardData.items) return;
+    for (let i = 0; i < e.clipboardData.items.length; i++) {
+      const item = e.clipboardData.items[i];
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        // Create a DataTransfer to set the file input
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        fileInput.dispatchEvent(new Event('change'));
+        break;
+      }
+    }
+  });
 });

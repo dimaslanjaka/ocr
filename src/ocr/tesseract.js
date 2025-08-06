@@ -106,16 +106,6 @@ export async function recognizeImage2(imagePathOrUrl, options) {
  *
  * @param {string} imagePathOrUrl - Path to the image file or image URL.
  * @param {import('node-tesseract-ocr').Config} [config] - Optional Tesseract OCR configuration options.
-
-  return texts;
-}
-
-/**
- * Recognize text from an image file or URL using Tesseract OCR and image cropping variants.
- * Downloads the image if a URL is provided, applies cropping, and merges OCR results.
- *
- * @param {string} imagePathOrUrl - Path to the image file or image URL.
- * @param {import('node-tesseract-ocr').Config} [config] - Optional Tesseract OCR configuration options.
  * @returns {Promise<string>} Promise resolving to the recognized text with duplicate lines removed.
  */
 export async function recognizeImage(imagePathOrUrl, config) {

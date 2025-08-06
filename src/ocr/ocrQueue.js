@@ -44,23 +44,19 @@ ocrQueue.process(concurrency, async (job) => {
   try {
     const args = [path.join(process.cwd(), 'src/ocr/cli.js'), input];
     console.log(`[OCR RUN] node ${args.join(' ')}`);
-    const result = await spawnAsync('node', args, {
+    const res = await spawnAsync('node', args, {
       stdio: 'pipe'
-    })
-      .then((res) => {
-        const vouchers = res.output.split(/\r?\n/).flatMap((line) => extractVoucherCodes(line, 'tmp/extract-vouchers'));
-        return {
-          text: res.output,
-          vouchers
-        };
-      })
-      .finally(async () => {
-        try {
-          return await fs.rm(imagePath, { force: true, recursive: true });
-        } catch {
-          // Ignore errors if the file cannot be removed
-        }
-      });
+    });
+    const vouchers = res.output.split(/\r?\n/).flatMap((line) => extractVoucherCodes(line, 'tmp/extract-vouchers'));
+    const result = {
+      text: res.output,
+      vouchers
+    };
+    try {
+      await fs.rm(imagePath, { force: true, recursive: true });
+    } catch {
+      // Ignore errors if the file cannot be removed
+    }
     await job.progress(100);
     return result;
   } catch (error) {

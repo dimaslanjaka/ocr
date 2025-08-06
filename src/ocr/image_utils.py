@@ -30,6 +30,7 @@ def unique_hash(text_or_image: Union[str, Image.Image]) -> str:
 def split_image(
     image: Union[str, Image.Image],
     mode: str = "quarters",  # "quarters" (default) or "halves"
+    output_dir: str = "tmp/crop"
 ) -> tuple[Image.Image | None, list[Image.Image], list[str]]:
     """
     Split image (from path or PIL.Image) into 4 quarters or 2 left/right halves.
@@ -53,7 +54,7 @@ def split_image(
         splits = []
         split_paths = []
 
-        hash_dir = get_relative_path("tmp/split", unique_hash(image_path))
+        hash_dir = get_relative_path(output_dir, unique_hash(image_path))
         os.makedirs(hash_dir, exist_ok=True)
 
         if mode == "halves":
@@ -69,6 +70,18 @@ def split_image(
             right.save(right_path)
             splits.append(right)
             split_paths.append(right_path)
+            # Top half
+            top = img.crop((0, 0, width, height // 2))
+            top_path = get_relative_path(hash_dir, "half_top.png")
+            top.save(top_path)
+            splits.append(top)
+            split_paths.append(top_path)
+            # Bottom half
+            bottom = img.crop((0, height // 2, width, height))
+            bottom_path = get_relative_path(hash_dir, "half_bottom.png")
+            bottom.save(bottom_path)
+            splits.append(bottom)
+            split_paths.append(bottom_path)
         elif mode == "quarters":
             mid_width = width // 2
             mid_height = height // 2

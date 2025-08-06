@@ -136,7 +136,7 @@ export async function recognizeImage(imagePathOrUrl, config) {
  * @param {string} imagePathOrUrl
  * @returns {Promise<string>} Local file path to image
  */
-async function getImagePathFromUrlOrLocal(imagePathOrUrl) {
+export async function getImagePathFromUrlOrLocal(imagePathOrUrl) {
   if (!/^https?:\/\//i.test(imagePathOrUrl)) {
     return imagePathOrUrl;
   }

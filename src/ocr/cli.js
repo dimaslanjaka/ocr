@@ -22,7 +22,7 @@ async function _nodeOcr(imagePathOrUrl) {
     text
       .split(/\r?\n/)
       .map((line) => line.trim())
-      .filter(Boolean)
+      .filter((line) => line.length > 0)
   );
   const vouchers = cleanText.flatMap((line) => extractVoucherCodes(line, 'tmp/extract-vouchers'));
   return { text: cleanText.join('\n'), vouchers };
@@ -60,7 +60,7 @@ if (isMain) {
   }
   _nodeOcr(input)
     .then((result) => {
-      console.log('OCR successful!');
+      console.log('OCR successful!\n');
       const debugFile = path.join(
         process.cwd(),
         'tmp/tesseract/debug',
@@ -72,8 +72,9 @@ if (isMain) {
       }
       writefile(debugFile, debugContent);
       if (result.vouchers && result.vouchers.length) {
-        console.log('Vouchers:', result.vouchers);
+        console.log('Vouchers:', result.vouchers, '\n\n');
       }
+      console.log(result.text);
       stopWorker();
     })
     .catch((err) => {

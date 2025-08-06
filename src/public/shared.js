@@ -1,21 +1,18 @@
 // Shared UI helper functions for public JS files
 
 export function showLoading() {
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = '';
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('result').classList.add('hidden');
 }
 
 export function hideLoading() {
-    const loading = document.getElementById('loading');
-    if (loading) loading.style.display = 'none';
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('result').classList.remove('hidden');
 }
 
 export function showResult(text) {
-    const result = document.getElementById('result');
-    if (result) {
-        result.textContent = text;
-        result.style.display = '';
-    }
+    document.getElementById('result').textContent = text || 'No text found in the image.';
+    clearMessages();
 }
 
 export function showError(message) {

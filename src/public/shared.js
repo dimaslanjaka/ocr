@@ -24,10 +24,72 @@ export function hideLoading() {
  */
 export function showResult(text) {
   clearMessages();
+  const rootResult = document.getElementById('result');
+  const voucherCodes = [];
   for (const line of text.split('\n')) {
-    const vouchers = extractVoucherCodes(line);
+    const vouchers = extractVoucherCodes(line, { filterBanned: true });
+    if (vouchers.length > 0) {
+      voucherCodes.push(...vouchers);
+    }
   }
-  document.getElementById('result').textContent = text || 'No text found in the image.';
+
+  // Create removable list of voucher codes
+  if (voucherCodes.length > 0) {
+    const map = voucherCodes.map((code) => ({
+      text: code,
+      onRemove: function (e) {
+        const index = voucherCodes.indexOf(code);
+        if (index > -1) {
+          voucherCodes.splice(index, 1);
+        }
+      }
+    }));
+    const voucherList = createRemovableList(map);
+    rootResult.appendChild(voucherList);
+  }
+
+  // Create OCR text display
+  const textDisplay = document.createElement('div');
+  textDisplay.className = 'text-sm text-gray-700';
+  textDisplay.textContent = text || 'No text found in the image.';
+  rootResult.appendChild(textDisplay);
+}
+
+/**
+ * Create a styled, removable list of items.
+ * @param {{ text: string, onRemove: (e: MouseEvent) => void }[]} items - Array of items with display text and remove callback.
+ * @returns {HTMLUListElement} The generated <ul> element containing the list items.
+ */
+function createRemovableList(items) {
+  const list = document.createElement('ul');
+  list.className = 'flex flex-wrap gap-2 my-2';
+  items.forEach(({ text, onRemove }) => {
+    const listItem = document.createElement('li');
+    listItem.className = 'inline-flex items-center bg-gray-100 border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 shadow-sm';
+
+    const codeSpan = document.createElement('span');
+    codeSpan.className = 'mr-2 font-mono';
+    codeSpan.textContent = text;
+    listItem.appendChild(codeSpan);
+
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.className = 'ml-1 inline-flex items-center justify-center p-1 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400';
+    removeButton.title = 'Remove';
+    removeButton.onclick = function(e) {
+      onRemove(e);
+      // Always remove the <li> from DOM after callback
+      const li = e.target.closest('li');
+      if (li) li.remove();
+    };
+
+    // Font Awesome Pro trash icon
+    removeButton.innerHTML = '<i class="fa-duotone fa-trash text-red-500 text-base"></i>';
+
+    listItem.appendChild(removeButton);
+    list.appendChild(listItem);
+  });
+  return list;
 }
 
 /**

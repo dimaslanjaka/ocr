@@ -2,6 +2,7 @@
   "name": "node-ocr-app",
   "type": "module",
   "scripts": {
+    "build": "node build-public.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit",
     "test2": "jest --runInBand --detectOpenHandles --forceExit"
   },

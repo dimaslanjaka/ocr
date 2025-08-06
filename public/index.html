@@ -358,8 +358,12 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    showResult(result.text);
-                    showSuccess(`Successfully processed: ${result.filename}`);
+                    if (result.jobId) {
+                        // Poll for result
+                        await pollOcrResult(result.jobId, result.filename);
+                    } else {
+                        showError('No job ID returned from server.');
+                    }
                 } else {
                     const errorText = await response.text();
                     showError(`Error: ${errorText}`);
@@ -370,6 +374,32 @@
 
             hideLoading();
         });
+
+        // Polling function for OCR result
+        async function pollOcrResult(jobId, filename) {
+            let tries = 0;
+            const maxTries = 60; // 2 minutes
+            while (tries < maxTries) {
+                try {
+                    const res = await fetch(`/result/${jobId}`);
+                    const data = await res.json();
+                    if (data.status === 'completed') {
+                        showResult(data.result.text);
+                        showSuccess(`Successfully processed: ${filename}`);
+                        return;
+                    } else if (data.status === 'failed') {
+                        showError('OCR failed: ' + data.error);
+                        return;
+                    }
+                } catch (err) {
+                    showError('Error fetching OCR result: ' + err.message);
+                    return;
+                }
+                await new Promise(r => setTimeout(r, 2000)); // wait 2 seconds
+                tries++;
+            }
+            showError('OCR timed out.');
+        }
 
         // URL form handler
         document.getElementById('urlForm').addEventListener('submit', async function(e) {

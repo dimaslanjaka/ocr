@@ -1,544 +1,194 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>OCR App - Extract Text from Images</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://rawcdn.githack.com/dimaslanjaka/Web-Manajemen/0f634f242ff259087c9fe176e8f28ccaebb5c015/css/all.min.css">
-</head>
-<body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen p-4 sm:p-6 lg:p-8">
+    <link
+      rel="stylesheet"
+      href="https://rawcdn.githack.com/dimaslanjaka/Web-Manajemen/0f634f242ff259087c9fe176e8f28ccaebb5c015/css/all.min.css" />
+  </head>
+  <body class="bg-gradient-to-br from-blue-500 to-purple-600 min-h-screen p-4 sm:p-6 lg:p-8">
     <div class="max-w-4xl mx-auto">
-        <!-- Header Card -->
-        <div class="bg-white rounded-lg shadow-xl mb-6 overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-8 text-center text-white">
-                <h1 class="text-3xl sm:text-4xl font-bold mb-2">
-                    <i class="fas fa-search text-4xl sm:text-5xl mr-3"></i>OCR Text Extractor
-                </h1>
-                <p class="text-lg opacity-90">Extract text from images using powerful OCR technology</p>
+      <!-- Header Card -->
+      <div class="bg-white rounded-lg shadow-xl mb-6 overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-8 text-center text-white">
+          <h1 class="text-3xl sm:text-4xl font-bold mb-2">
+            <i class="fas fa-search text-4xl sm:text-5xl mr-3"></i>OCR Text Extractor
+          </h1>
+          <p class="text-lg opacity-90">Extract text from images using powerful OCR technology</p>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Upload Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-folder-open text-blue-600 mr-2"></i>Upload Image File
+          </h2>
+          <form id="uploadForm" class="space-y-4" enctype="multipart/form-data">
+            <div class="flex items-center justify-center w-full">
+              <label
+                for="imageFile"
+                id="dropArea"
+                class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-blue-400 transition-colors">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                  <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-4"></i>
+                  <p class="mb-2 text-sm text-gray-500">
+                    <span class="font-semibold">Click to upload</span> or drag and drop
+                  </p>
+                  <p class="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 10MB)</p>
+                </div>
+                <input id="imageFile" name="image" type="file" class="hidden" accept="image/*" required />
+              </label>
             </div>
+            <div id="fileName" class="text-sm text-green-600 text-center"></div>
+            <button
+              type="submit"
+              class="w-full text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+              <i class="fas fa-magic mr-2"></i>Extract Text from Upload
+            </button>
+          </form>
         </div>
 
-        <!-- Main Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Upload Section -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-folder-open text-blue-600 mr-2"></i>Upload Image File
-                </h2>
-                <form id="uploadForm" class="space-y-4" enctype="multipart/form-data">
-                    <div class="flex items-center justify-center w-full">
-                        <label for="imageFile" id="dropArea" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-blue-400 transition-colors">
-                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-4"></i>
-                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                <p class="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 10MB)</p>
-                            </div>
-                            <input id="imageFile" name="image" type="file" class="hidden" accept="image/*" required />
-                        </label>
-                    </div>
-                    <div id="fileName" class="text-sm text-green-600 text-center"></div>
-                    <button type="submit" class="w-full text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-                        <i class="fas fa-magic mr-2"></i>Extract Text from Upload
-                    </button>
-                </form>
+        <!-- URL Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-globe text-purple-600 mr-2"></i>Extract from Image URL
+          </h2>
+          <form id="urlForm" class="space-y-4">
+            <div>
+              <label for="imageUrl" class="block mb-2 text-sm font-medium text-gray-900">Image URL</label>
+              <textarea
+                id="imageUrl"
+                rows="3"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 resize-none"
+                placeholder="Enter image URL (e.g., https://example.com/image.jpg)"
+                required>
+https://tesseract.projectnaptha.com/img/eng_bw.png</textarea
+              >
             </div>
-
-            <!-- URL Section -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-globe text-purple-600 mr-2"></i>Extract from Image URL
-                </h2>
-                <form id="urlForm" class="space-y-4">
-                    <div>
-                        <label for="imageUrl" class="block mb-2 text-sm font-medium text-gray-900">Image URL</label>
-                        <textarea id="imageUrl" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 resize-none" placeholder="Enter image URL (e.g., https://example.com/image.jpg)" required>https://tesseract.projectnaptha.com/img/eng_bw.png</textarea>
-                    </div>
-                    <button type="submit" class="w-full text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
-                        <i class="fas fa-magic mr-2"></i>Extract Text from URL
-                    </button>
-                </form>
-            </div>
-
-            <!-- Camera Section -->
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-camera text-red-600 mr-2"></i>Live Camera
-                </h2>
-
-                <!-- Camera Usage Instructions -->
-                <blockquote class="p-4 my-4 border-s-4 border-blue-300 bg-blue-50 rounded-lg">
-                    <div class="flex items-start">
-                        <i class="fas fa-info-circle text-blue-600 mr-2 mt-1"></i>
-                        <div>
-                            <p class="text-sm text-blue-800 leading-relaxed">
-                                <strong>How to use:</strong> Click "Start" to activate your camera, position text in the viewfinder, then click "Capture" to extract text from the image.
-                            </p>
-                        </div>
-                    </div>
-                </blockquote>
-
-                <!-- Camera Controls -->
-                <div class="space-y-3 mb-4">
-                    <div class="flex gap-2">
-                        <select id="cameraSelect" class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2">
-                            <option value="">Select Camera</option>
-                        </select>
-                        <button id="refreshCameras" class="px-3 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
-                    <div class="flex gap-2">
-                        <button id="orientationPortrait" class="flex-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors">
-                            <i class="fas fa-mobile-alt mr-1"></i>Portrait
-                        </button>
-                        <button id="orientationLandscape" class="flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors">
-                            <i class="fas fa-tablet-alt mr-1"></i>Landscape
-                        </button>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="relative">
-                        <video id="cameraVideo" class="w-full h-48 bg-gray-200 rounded-lg hidden object-cover" autoplay playsinline></video>
-                        <canvas id="cameraCanvas" class="hidden"></canvas>
-                        <div id="cameraPlaceholder" class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
-                            <div class="text-center">
-                                <i class="fas fa-camera text-4xl text-gray-400 mb-2"></i>
-                                <p class="text-gray-500">Camera not started</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button id="startCamera" class="flex-1 text-white bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-3 py-2 text-center">
-                            <i class="fas fa-play mr-1"></i>Start
-                        </button>
-                        <button id="captureImage" class="flex-1 text-white bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-3 py-2 text-center" disabled>
-                            <i class="fas fa-camera mr-1"></i>Capture
-                        </button>
-                        <button id="stopCamera" class="flex-1 text-white bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2 text-center" disabled>
-                            <i class="fas fa-stop mr-1"></i>Stop
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <button
+              type="submit"
+              class="w-full text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center">
+              <i class="fas fa-magic mr-2"></i>Extract Text from URL
+            </button>
+          </form>
         </div>
 
-        <!-- Results Section -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
-            <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                <i class="fas fa-file-alt text-green-600 mr-2"></i>Extracted Text
-            </h2>
+        <!-- Camera Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-camera text-red-600 mr-2"></i>Live Camera
+          </h2>
 
-            <!-- Loading Spinner -->
-            <div id="loading" class="hidden text-center py-8">
-                <div role="status">
-                    <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
-                    <span class="sr-only">Loading...</span>
+          <!-- Camera Usage Instructions -->
+          <blockquote class="p-4 my-4 border-s-4 border-blue-300 bg-blue-50 rounded-lg">
+            <div class="flex items-start">
+              <i class="fas fa-info-circle text-blue-600 mr-2 mt-1"></i>
+              <div>
+                <p class="text-sm text-blue-800 leading-relaxed">
+                  <strong>How to use:</strong> Click "Start" to activate your camera, position text in the viewfinder,
+                  then click "Capture" to extract text from the image.
+                </p>
+              </div>
+            </div>
+          </blockquote>
+
+          <!-- Camera Controls -->
+          <div class="space-y-3 mb-4">
+            <div class="flex gap-2">
+              <select
+                id="cameraSelect"
+                class="flex-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2">
+                <option value="">Select Camera</option>
+              </select>
+              <button
+                id="refreshCameras"
+                class="px-3 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300">
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
+            <div class="flex gap-2">
+              <button
+                id="orientationPortrait"
+                class="flex-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors">
+                <i class="fas fa-mobile-alt mr-1"></i>Portrait
+              </button>
+              <button
+                id="orientationLandscape"
+                class="flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors">
+                <i class="fas fa-tablet-alt mr-1"></i>Landscape
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="relative">
+              <video
+                id="cameraVideo"
+                class="w-full h-48 bg-gray-200 rounded-lg hidden object-cover"
+                autoplay
+                playsinline></video>
+              <canvas id="cameraCanvas" class="hidden"></canvas>
+              <div id="cameraPlaceholder" class="w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center">
+                <div class="text-center">
+                  <i class="fas fa-camera text-4xl text-gray-400 mb-2"></i>
+                  <p class="text-gray-500">Camera not started</p>
                 </div>
-                <p class="mt-2 text-gray-600">Processing image... Please wait.</p>
+              </div>
             </div>
-
-            <!-- Result Text Area -->
-            <div id="result" class="min-h-[200px] p-4 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 font-mono whitespace-pre-wrap">
-                Upload an image or enter an image URL to extract text...
+            <div class="flex gap-2">
+              <button
+                id="startCamera"
+                class="flex-1 text-white bg-gradient-to-r from-green-500 via-green-600 to-green-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-3 py-2 text-center">
+                <i class="fas fa-play mr-1"></i>Start
+              </button>
+              <button
+                id="captureImage"
+                class="flex-1 text-white bg-gradient-to-r from-red-500 via-red-600 to-red-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-3 py-2 text-center"
+                disabled>
+                <i class="fas fa-camera mr-1"></i>Capture
+              </button>
+              <button
+                id="stopCamera"
+                class="flex-1 text-white bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2 text-center"
+                disabled>
+                <i class="fas fa-stop mr-1"></i>Stop
+              </button>
             </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Results Section -->
+      <div class="bg-white rounded-lg shadow-lg p-6 mt-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+          <i class="fas fa-file-alt text-green-600 mr-2"></i>Extracted Text
+        </h2>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="hidden text-center py-8">
+          <div role="status">
+            <i class="fas fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+            <span class="sr-only">Loading...</span>
+          </div>
+          <p class="mt-2 text-gray-600">Processing image... Please wait.</p>
+        </div>
+
+        <!-- Result Text Area -->
+        <div
+          id="result"
+          class="min-h-[200px] p-4 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 font-mono whitespace-pre-wrap">
+          Upload an image or enter an image URL to extract text...
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
-    <script>
-        let cameraStream = null;
-        let cameraVideo = null;
-        let cameraCanvas = null;
-        let currentOrientation = 'portrait';
-        let availableCameras = [];
-
-        // Initialize camera elements
-        document.addEventListener('DOMContentLoaded', function() {
-            cameraVideo = document.getElementById('cameraVideo');
-            cameraCanvas = document.getElementById('cameraCanvas');
-
-            // Camera control buttons
-            document.getElementById('startCamera').addEventListener('click', startCamera);
-            document.getElementById('captureImage').addEventListener('click', captureImage);
-            document.getElementById('stopCamera').addEventListener('click', stopCamera);
-            document.getElementById('refreshCameras').addEventListener('click', getCameraDevices);
-            document.getElementById('orientationPortrait').addEventListener('click', () => setOrientation('portrait'));
-            document.getElementById('orientationLandscape').addEventListener('click', () => setOrientation('landscape'));
-
-            // Initialize camera devices
-            getCameraDevices();
-        });
-
-        async function getCameraDevices() {
-            try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                availableCameras = devices.filter(device => device.kind === 'videoinput');
-
-                const cameraSelect = document.getElementById('cameraSelect');
-                cameraSelect.innerHTML = '<option value="">Select Camera</option>';
-
-                availableCameras.forEach((camera, index) => {
-                    const option = document.createElement('option');
-                    option.value = camera.deviceId;
-                    option.textContent = camera.label || `Camera ${index + 1}`;
-                    cameraSelect.appendChild(option);
-                });
-
-                if (availableCameras.length === 0) {
-                    showError('No cameras found on this device.');
-                }
-            } catch (error) {
-                showError(`Error accessing camera devices: ${error.message}`);
-            }
-        }
-
-        function setOrientation(orientation) {
-            currentOrientation = orientation;
-
-            // Update button styles
-            const portraitBtn = document.getElementById('orientationPortrait');
-            const landscapeBtn = document.getElementById('orientationLandscape');
-
-            if (orientation === 'portrait') {
-                portraitBtn.className = 'flex-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors';
-                landscapeBtn.className = 'flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors';
-            } else {
-                landscapeBtn.className = 'flex-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 border border-blue-300 rounded-lg hover:bg-blue-200 transition-colors';
-                portraitBtn.className = 'flex-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors';
-            }
-
-            // Update video container height based on orientation
-            updateVideoContainerSize();
-        }
-
-        function updateVideoContainerSize() {
-            const videoElement = document.getElementById('cameraVideo');
-            const placeholder = document.getElementById('cameraPlaceholder');
-
-            if (currentOrientation === 'landscape') {
-                videoElement.className = 'w-full h-64 bg-gray-200 rounded-lg hidden object-cover';
-                placeholder.className = 'w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center';
-            } else {
-                videoElement.className = 'w-full h-48 bg-gray-200 rounded-lg hidden object-cover';
-                placeholder.className = 'w-full h-48 bg-gray-200 rounded-lg flex items-center justify-center';
-            }
-        }
-
-        async function startCamera() {
-            try {
-                const cameraSelect = document.getElementById('cameraSelect');
-                const selectedCameraId = cameraSelect.value;
-
-                let constraints = {
-                    video: {
-                        facingMode: selectedCameraId ? undefined : 'environment'
-                    }
-                };
-
-                // Set orientation-specific constraints
-                if (currentOrientation === 'landscape') {
-                    constraints.video.width = { ideal: 1280 };
-                    constraints.video.height = { ideal: 720 };
-                } else {
-                    constraints.video.width = { ideal: 720 };
-                    constraints.video.height = { ideal: 1280 };
-                }
-
-                // Use specific camera if selected
-                if (selectedCameraId) {
-                    constraints.video.deviceId = { exact: selectedCameraId };
-                }
-
-                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-
-                cameraVideo.srcObject = cameraStream;
-                cameraVideo.classList.remove('hidden');
-                document.getElementById('cameraPlaceholder').classList.add('hidden');
-
-                // Enable/disable buttons
-                document.getElementById('startCamera').disabled = true;
-                document.getElementById('captureImage').disabled = false;
-                document.getElementById('stopCamera').disabled = false;
-
-                showSuccess(`Camera started in ${currentOrientation} mode!`);
-            } catch (error) {
-                showError(`Camera error: ${error.message}. Please check camera permissions and try selecting a different camera.`);
-            }
-        }
-
-        function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-            }
-
-            cameraVideo.classList.add('hidden');
-            document.getElementById('cameraPlaceholder').classList.remove('hidden');
-
-            // Enable/disable buttons
-            document.getElementById('startCamera').disabled = false;
-            document.getElementById('captureImage').disabled = true;
-            document.getElementById('stopCamera').disabled = true;
-
-            showSuccess('Camera stopped.');
-        }
-
-        async function captureImage() {
-            if (!cameraVideo || !cameraStream) {
-                showError('Camera is not active.');
-                return;
-            }
-
-            // Set canvas size to match video
-            cameraCanvas.width = cameraVideo.videoWidth;
-            cameraCanvas.height = cameraVideo.videoHeight;
-
-            // Draw current video frame to canvas
-            const ctx = cameraCanvas.getContext('2d');
-            ctx.drawImage(cameraVideo, 0, 0);
-
-            // Convert canvas to blob
-            cameraCanvas.toBlob(async (blob) => {
-                if (!blob) {
-                    showError('Failed to capture image.');
-                    return;
-                }
-
-                showLoading();
-
-                try {
-                    const formData = new FormData();
-                    formData.append('image', blob, 'camera-capture.jpg');
-
-                    const response = await fetch('/upload', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        showResult(result.text);
-                        showSuccess('Successfully processed camera capture!');
-                    } else {
-                        const errorText = await response.text();
-                        showError(`Error: ${errorText}`);
-                    }
-                } catch (error) {
-                    showError(`Network error: ${error.message}`);
-                }
-
-                hideLoading();
-            }, 'image/jpeg', 0.8);
-        }
-
-        // File upload form handler
-        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const formData = new FormData();
-            const fileInput = document.getElementById('imageFile');
-            const file = fileInput.files[0];
-
-            if (!file) {
-                showError('Please select an image file.');
-                return;
-            }
-
-            formData.append('image', file);
-            showLoading();
-
-            try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.jobId) {
-                        // Poll for result
-                        await pollOcrResult(result.jobId, result.filename);
-                    } else {
-                        showError('No job ID returned from server.');
-                    }
-                } else {
-                    const errorText = await response.text();
-                    showError(`Error: ${errorText}`);
-                }
-            } catch (error) {
-                showError(`Network error: ${error.message}`);
-            }
-
-            hideLoading();
-        });
-
-        // Polling function for OCR result
-        async function pollOcrResult(jobId, filename) {
-            let tries = 0;
-            // Remove maxTries, poll forever until job is done or failed
-            while (true) {
-                try {
-                    const res = await fetch(`/result/${jobId}`);
-                    const data = await res.json();
-                    if (data.status === 'completed') {
-                        if (data.text) {
-                            showResult(data.text);
-                        } else if (data.result && data.result.text) {
-                            showResult(data.result.text);
-                        }
-                        showSuccess(`Successfully processed: ${filename}`);
-                        return;
-                    } else if (data.status === 'failed') {
-                        showError('OCR failed: ' + data.error);
-                        return;
-                    } else if (data.status === 'pending') {
-                        document.getElementById('result').textContent = `Job pending... (state: pending, try ${tries + 1})`;
-                    } else if (data.status === 'not_found') {
-                        showError('Job not found.');
-                        return;
-                    } else if (data.status === 'error') {
-                        showError('Server error: ' + data.error);
-                        return;
-                    } else {
-                        showError('Unknown job state: ' + JSON.stringify(data));
-                        return;
-                    }
-                } catch (err) {
-                    showError('Error fetching OCR result: ' + err.message);
-                    return;
-                }
-                await new Promise(r => setTimeout(r, 2000));
-                tries++;
-            }
-        }
-
-        // URL form handler
-        document.getElementById('urlForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const imageUrl = document.getElementById('imageUrl').value;
-
-            if (!imageUrl) {
-                showError('Please enter an image URL.');
-                return;
-            }
-
-            showLoading();
-
-            try {
-                const response = await fetch(`/url?imageurl=${encodeURIComponent(imageUrl)}`);
-
-                if (response.ok) {
-                    const text = await response.text();
-                    showResult(text);
-                    showSuccess('Successfully processed image from URL!');
-                } else {
-                    const errorText = await response.text();
-                    showError(`Error: ${errorText}`);
-                }
-            } catch (error) {
-                showError(`Network error: ${error.message}`);
-            }
-
-            hideLoading();
-        });
-
-        // File selection display
-        document.getElementById('imageFile').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name;
-            const fileNameDiv = document.getElementById('fileName');
-            if (fileName) {
-                fileNameDiv.textContent = `Selected: ${fileName}`;
-                fileNameDiv.className = 'text-sm text-green-600 text-center';
-            } else {
-                fileNameDiv.textContent = '';
-            }
-        });
-
-        // Drag and drop support for upload area
-        document.addEventListener('DOMContentLoaded', function() {
-            // Drag and drop handlers
-            const dropArea = document.getElementById('dropArea');
-            const fileInput = document.getElementById('imageFile');
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropArea.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropArea.classList.add('border-blue-400', 'bg-blue-50');
-                });
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropArea.classList.remove('border-blue-400', 'bg-blue-50');
-                });
-            });
-
-            dropArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const files = e.dataTransfer.files;
-                if (files && files.length > 0) {
-                    fileInput.files = files;
-                    // Trigger change event to update file name display
-                    fileInput.dispatchEvent(new Event('change'));
-                }
-            });
-        });
-
-        function showLoading() {
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('result').classList.add('hidden');
-        }
-
-        function hideLoading() {
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('result').classList.remove('hidden');
-        }
-
-        function showResult(text) {
-            document.getElementById('result').textContent = text || 'No text found in the image.';
-            clearMessages();
-        }
-
-        function showError(message) {
-            clearMessages();
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'flex flex-col items-start p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 w-full box-border max-w-full overflow-x-auto';
-            alertDiv.innerHTML = `
-                <div class="flex items-center mb-2">
-                    <i class="fas fa-exclamation-triangle flex-shrink-0 w-4 h-4 mr-2"></i>
-                    <span class="font-medium">Error!</span>
-                </div>
-                <div class="pl-6">${message}</div>
-            `;
-            document.getElementById('result').parentNode.insertBefore(alertDiv, document.getElementById('result'));
-        }
-
-        function showSuccess(message) {
-            clearMessages();
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'flex flex-col items-start p-4 mb-4 text-sm text-green-800 border border-green-300 rounded-lg bg-green-50 w-full box-border max-w-full overflow-x-auto';
-            alertDiv.innerHTML = `
-                <div class="flex items-center mb-2">
-                    <i class="fas fa-check-circle flex-shrink-0 w-4 h-4 mr-2"></i>
-                    <span class="font-medium">Success!</span>
-                </div>
-                <div class="pl-6">${message}</div>
-            `;
-            document.getElementById('result').parentNode.insertBefore(alertDiv, document.getElementById('result'));
-        }
-
-        function clearMessages() {
-            const alerts = document.querySelectorAll('.bg-red-50, .bg-green-50');
-            alerts.forEach(alert => alert.remove());
-        }
-    </script>
-</body>
+    <script src="js/index.global.js"></script>
+  </body>
 </html>

@@ -25,6 +25,8 @@ export function hideLoading() {
 export function showResult(text) {
   clearMessages();
   const rootResult = document.getElementById('result');
+  rootResult.innerHTML = ''; // Clear previous content
+
   const voucherCodes = [];
   for (const line of text.split('\n')) {
     const vouchers = extractVoucherCodes(line, { filterBanned: true });

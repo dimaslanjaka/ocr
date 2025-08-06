@@ -2,7 +2,7 @@
   "name": "node-ocr-app",
   "type": "module",
   "scripts": {
-    "build": "node build-public.js",
+    "build": "node build-public.js 2>&1 | tee build.log",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --forceExit",
     "test2": "jest --runInBand --detectOpenHandles --forceExit"
   },
@@ -10,6 +10,7 @@
     "@tensorflow/tfjs-node": "^4.22.0",
     "axios": "^1.11.0",
     "better-sqlite3": "^12.2.0",
+    "bluebird": "^3.7.2",
     "bull": "^4.16.5",
     "cloudflared": "^0.7.1",
     "cross-spawn": "^7.0.6",
@@ -37,14 +38,21 @@
     "@jest/expect": "^30.0.5",
     "@jest/globals": "^30.0.5",
     "@jest/types": "^30.0.5",
+    "@swc/core": "^1.13.3",
     "@types/babel__preset-env": "^7",
+    "@types/bluebird": "^3",
     "@types/crypto-js": "^4",
     "@types/fs-extra": "^11",
+    "@types/node": "^24.2.0",
+    "@types/path-browserify": "^1",
     "@types/ws": "^8",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
     "babel-jest": "^30.0.5",
     "binary-collections": "^2.0.9",
+    "esbuild": "^0.25.8",
+    "esbuild-plugin-alias": "^0.2.1",
+    "esbuild-plugins-node-modules-polyfill": "^1.7.1",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.3",
@@ -52,11 +60,13 @@
     "jest": "^30.0.5",
     "jest-config": "^30.0.5",
     "jest-mock": "^30.0.5",
+    "path-browserify": "^1.0.1",
     "prettier": "^3.6.2",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "url-browserify": "^2.0.0"
   },
   "workspaces": [
     "packages/*"

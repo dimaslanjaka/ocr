@@ -46,8 +46,14 @@ export function showResult(text) {
         }
       }
     }));
+
+    // Wrap the removable list with a Flowbite Tailwind card
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded-lg shadow-md border border-gray-200 p-4 mb-4';
+    card.innerHTML = `<h5 class="mb-2 text-lg font-bold tracking-tight text-gray-900">Voucher Codes</h5>`;
     const voucherList = createRemovableList(map);
-    rootResult.appendChild(voucherList);
+    card.appendChild(voucherList);
+    rootResult.appendChild(card);
   }
 
   // Create OCR text display

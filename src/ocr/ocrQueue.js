@@ -4,6 +4,7 @@ import path from 'path';
 import { recognizeImage2 } from '../ocr/tesseract.js';
 import { optimizeForOCR } from './image_utils/optimize-image.js';
 import { extractVoucherCodes } from '../database/VoucherDatabase.js';
+import { noop } from 'sbg-utility';
 
 // Tesseract configuration
 const _config = {
@@ -34,12 +35,12 @@ ocrQueue.process(async (job) => {
     );
     const vouchers = cleanText.flatMap((line) => extractVoucherCodes(line, 'tmp/extract-vouchers'));
     setTimeout(() => {
-      fs.rmSync(imagePath, { force: true });
+      fs.rm(imagePath, { force: true }).catch(noop);
     }, 5000);
     return { text: cleanText.join('\n'), vouchers };
   } catch (error) {
     setTimeout(() => {
-      fs.rmSync(imagePath, { force: true });
+      fs.rm(imagePath, { force: true }).catch(noop);
     }, 5000);
     throw error;
   }

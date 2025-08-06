@@ -22,7 +22,7 @@ export async function setupWorker() {
     worker = await createWorker(
       ['eng', 'ind'],
       Tesseract.OEM.TESSERACT_LSTM_COMBINED,
-      { cachePath: path.join(process.cwd(), 'tmp/worker-cache') },
+      { cachePath: path.join(process.cwd(), 'tessdata') },
       {}
     );
   }

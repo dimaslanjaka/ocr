@@ -61,7 +61,16 @@ if (isMain) {
   _nodeOcr(input)
     .then((result) => {
       console.log('OCR successful!');
-      writefile('tmp/tesseract/debug.log', JSON.stringify(result, null, 2));
+      const debugFile = path.join(
+        process.cwd(),
+        'tmp/tesseract/debug',
+        path.basename(input, path.extname(input)) + '.log'
+      );
+      let debugContent = `Input: ${input}\n\n`;
+      for (const [key, value] of Object.entries(result)) {
+        debugContent += `${key}:\n${value}\n\n`;
+      }
+      writefile(debugFile, debugContent);
       if (result.vouchers && result.vouchers.length) {
         console.log('Vouchers:', result.vouchers);
       }

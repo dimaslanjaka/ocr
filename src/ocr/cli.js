@@ -7,7 +7,7 @@ import { optimizeForOCR } from './image_utils/optimize-image.js';
 import { writefile } from 'sbg-utility';
 
 // Usage:
-// node src/ocr/cli.js test/fixtures/voucher.jpeg
+// node src/ocr/cli.js test/fixtures/voucher-fix.jpeg
 
 async function _nodeOcr(imagePathOrUrl) {
   // Extract image if URL, otherwise return local path

@@ -1,10 +1,10 @@
 import axios from 'axios';
+import { spawnAsync } from 'cross-spawn';
 import fs from 'fs-extra';
 import tesseract from 'node-tesseract-ocr';
 import path from 'path';
-import { cropImageVariants } from './image_utils.js';
-import { spawnAsync } from 'cross-spawn';
 import Tesseract, { createWorker } from 'tesseract.js';
+import { cropImageVariants } from './image_utils.js';
 
 /**
  * Shared Tesseract worker instance.
@@ -81,20 +81,20 @@ export async function getWorker() {
  */
 export async function recognizeImage2(imagePathOrUrl, options) {
   // Extract image if URL, otherwise return local path
-  const imagePath = await getImagePathFromUrlOrLocal(imagePathOrUrl);
+  let imagePath = await getImagePathFromUrlOrLocal(imagePathOrUrl);
   const { outputDir = path.join(process.cwd(), 'tmp/tesseract'), split = false } = options;
   const texts = {};
-  await setupWorker();
+  const workerInstance = await getWorker();
 
   if (split) {
     const cropVariants = await cropImageVariants(imagePath, outputDir);
     for (const variant of cropVariants) {
-      const result = await worker.recognize(variant.outputPath);
+      const result = await workerInstance.recognize(variant.outputPath);
       texts[variant.name] = result.data.text;
     }
   }
 
-  const result = await worker.recognize(imagePath);
+  const result = await workerInstance.recognize(imagePath);
   texts[imagePath] = result.data.text;
 
   return texts;

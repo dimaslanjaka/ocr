@@ -45,7 +45,7 @@ export function uploadRoute(app) {
       // Wait for job completion and respond (fully async/await)
       const result = await job.finished();
       res.json({
-        text: result.text.trim(),
+        ...result,
         filename: req.file.originalname
       });
     } catch (error) {

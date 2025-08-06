@@ -1,9 +1,12 @@
 import Queue from 'bull';
 import fs from 'fs-extra';
-import { recognizeImagePython } from '../ocr/tesseract.js';
+import path from 'path';
+import { recognizeImage2 } from '../ocr/tesseract.js';
+import { optimizeForOCR } from './image_utils/optimize-image.js';
+import { extractVoucherCodes } from '../database/VoucherDatabase.js';
 
 // Tesseract configuration
-const config = {
+const _config = {
   lang: 'eng',
   oem: 1,
   psm: 3
@@ -18,11 +21,22 @@ export const ocrQueue = new Queue('ocr-queue', {
 ocrQueue.process(async (job) => {
   const { imagePath } = job.data;
   try {
-    const text = await recognizeImagePython(imagePath, config);
+    // const text = await recognizeImagePython(imagePath, config);
+    const optimizedImagePath = path.join(process.cwd(), 'tmp/tesseract/optimized.png');
+    await optimizeForOCR(imagePath, optimizedImagePath);
+    const options = { outputDir: 'tmp/tesseract', split: true };
+    const result = await recognizeImage2(optimizedImagePath, options);
+    const cleanText = Object.values(result).flatMap((text) =>
+      text
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+    );
+    const vouchers = cleanText.flatMap((line) => extractVoucherCodes(line, 'tmp/extract-vouchers'));
     setTimeout(() => {
       fs.rmSync(imagePath, { force: true });
     }, 5000);
-    return { text };
+    return { text: cleanText.join('\n'), vouchers };
   } catch (error) {
     setTimeout(() => {
       fs.rmSync(imagePath, { force: true });

@@ -2,9 +2,8 @@ import path from 'path';
 import fs from 'fs-extra';
 import JsonDB from './jsonDb.js';
 import crypto from 'crypto';
-
-// Banned voucher codes (normalized, no spaces)
-const BANNED_VOUCHERS = new Set(['1234123412341234', '1234123422341234']);
+import { extractVoucherCodes as extractVoucherCodesShared } from '../shared/extractVoucherCodes.js';
+import { BANNED_VOUCHERS } from '../shared/bannedVouchers.js';
 
 /**
  * Extract voucher codes from the given text, optionally outputting debug info to outputDir.
@@ -13,18 +12,10 @@ const BANNED_VOUCHERS = new Set(['1234123412341234', '1234123422341234']);
  * @returns {string[]}
  */
 export function extractVoucherCodes(text, outputDir) {
-  // Simple regex to find alphanumeric codes, adjust as needed for your voucher format
-  const regex = /\b\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\b/g;
-  const matches = text.match(regex) || [];
-  // Normalize: remove all spaces, ensure 16 digits, skip banned vouchers, remove duplicates
-  const seen = new Set();
-  const result = matches
-    .map((code) => code.replace(/\s+/g, ''))
-    .filter((code) => {
-      if (code.length !== 16 || BANNED_VOUCHERS.has(code) || seen.has(code)) return false;
-      seen.add(code);
-      return true;
-    });
+  // Use shared logic
+  let result = extractVoucherCodesShared(text);
+  // Filter out banned vouchers (server only)
+  result = result.filter((code) => !BANNED_VOUCHERS.has(code));
 
   if (outputDir) {
     try {
@@ -34,7 +25,7 @@ export function extractVoucherCodes(text, outputDir) {
       const filename = md5(text);
       fs.writeFileSync(
         path.join(outputDir, `${filename}.txt`),
-        `${regex}\n\n${text}\n\n${JSON.stringify(result, null, 2)}`,
+        `/\\b\\d{4}\\s*\\d{4}\\s*\\d{4}\\s*\\d{4}\\b/g\n\n${text}\n\n${JSON.stringify(result, null, 2)}`,
         'utf8'
       );
     } catch (e) {

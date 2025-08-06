@@ -1,20 +1,39 @@
 // Shared UI helper functions for public JS files
 
+import { extractVoucherCodes } from '../shared/extractVoucherCodes.js';
+
+/**
+ * Show the loading indicator and hide the result area.
+ */
 export function showLoading() {
   document.getElementById('loading').classList.remove('hidden');
   document.getElementById('result').classList.add('hidden');
 }
 
+/**
+ * Hide the loading indicator and show the result area.
+ */
 export function hideLoading() {
   document.getElementById('loading').classList.add('hidden');
   document.getElementById('result').classList.remove('hidden');
 }
 
+/**
+ * Display the OCR result text in the result area.
+ * @param {string} text - The text to display. If empty, shows a default message.
+ */
 export function showResult(text) {
   clearMessages();
+  for (const line of text.split('\n')) {
+    const vouchers = extractVoucherCodes(line);
+  }
   document.getElementById('result').textContent = text || 'No text found in the image.';
 }
 
+/**
+ * Display an error message above the result area.
+ * @param {string} message - The error message to display.
+ */
 export function showError(message) {
   clearMessages();
   const alertDiv = document.createElement('div');
@@ -33,6 +52,10 @@ export function showError(message) {
   }
 }
 
+/**
+ * Display a success message above the result area.
+ * @param {string} message - The success message to display.
+ */
 export function showSuccess(message) {
   clearMessages();
   const alertDiv = document.createElement('div');
@@ -51,6 +74,9 @@ export function showSuccess(message) {
   }
 }
 
+/**
+ * Remove all alert messages from the UI.
+ */
 export function clearMessages() {
   const alerts = document.querySelectorAll('.bg-red-50, .bg-green-50');
   alerts.forEach((alert) => alert.remove());

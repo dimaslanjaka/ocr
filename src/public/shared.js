@@ -28,7 +28,7 @@ export function showResult(text) {
   rootResult.innerHTML = ''; // Clear previous content
 
   const voucherCodes = [];
-  for (const line of text.split('\n')) {
+  for (const line of text.split(/\r?\n/)) {
     const vouchers = extractVoucherCodes(line, { filterBanned: true });
     if (vouchers.length > 0) {
       voucherCodes.push(...vouchers);

@@ -2,8 +2,9 @@ import minimist from 'minimist';
 import { pathToFileURL } from 'node:url';
 import path from 'upath';
 import { extractVoucherCodes } from '../database/VoucherDatabase.js';
-import { getImagePathFromUrlOrLocal, recognizeImage2 } from '../ocr/tesseract.js';
+import { getImagePathFromUrlOrLocal, recognizeImage2, stopWorker } from '../ocr/tesseract.js';
 import { optimizeForOCR } from './image_utils/optimize-image.js';
+import { writefile } from 'sbg-utility';
 
 // Usage:
 // node src/ocr/cli.js test/fixtures/voucher.jpeg
@@ -59,10 +60,12 @@ if (isMain) {
   }
   _nodeOcr(input)
     .then((result) => {
-      console.log('OCR Result:', result.text);
+      console.log('OCR successful!');
+      writefile('tmp/tesseract/debug.log', JSON.stringify(result, null, 2));
       if (result.vouchers && result.vouchers.length) {
         console.log('Vouchers:', result.vouchers);
       }
+      stopWorker();
     })
     .catch((err) => {
       console.error('Error:', err.message || err);

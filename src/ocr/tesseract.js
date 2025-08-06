@@ -56,6 +56,20 @@ export async function stopWorker(exit = false, exitCode = 0) {
 });
 
 /**
+ * Returns the shared Tesseract.js worker instance.
+ * Throws an error if the worker is not initialized (call setupWorker() first).
+ *
+ * @returns {Promise<import('tesseract.js').Worker>} The initialized Tesseract.js worker instance.
+ * @throws {Error} If the worker is not initialized.
+ */
+export async function getWorker() {
+  if (!worker) {
+    await setupWorker();
+  }
+  return worker;
+}
+
+/**
  * Recognize text from an image file or URL using a shared Tesseract.js worker and optional image cropping variants.
  * Downloads the image if a URL is provided, applies cropping if requested, and returns OCR results for each variant and the original image.
  *

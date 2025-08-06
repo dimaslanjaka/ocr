@@ -107,19 +107,22 @@ def split_image(
         return None, [], []
 
 
-def dewarp_image(image: Union[str, Image.Image]) -> tuple[Image.Image, str] | None:
+def dewarp_image(image: Union[str, Image.Image, np.ndarray]) -> tuple[Image.Image, str] | None:
     """
     Attempt to dewarp an image using perspective transform.
-    Accepts a file path or PIL Image. Returns the dewarped image as a PIL Image object and output path.
+    Accepts a file path, PIL Image, or numpy ndarray. Returns the dewarped image as a PIL Image object and output path.
     """
     try:
-        # Accept either a file path or a PIL Image object
+        # Accept file path, PIL Image, or numpy ndarray
         if isinstance(image, str):
             img = cv2.imread(image)
             image_path = image
         elif isinstance(image, Image.Image):
             img = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
             image_path = getattr(image, "filename", "in_memory_image")
+        elif isinstance(image, np.ndarray):
+            img = image
+            image_path = "ndarray_input"
         else:
             safe_print("❌\tInvalid input type for dewarp_image.")
             return None

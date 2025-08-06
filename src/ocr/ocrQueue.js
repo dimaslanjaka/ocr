@@ -12,7 +12,7 @@ const _config = {
 };
 
 // Create a Bull queue for OCR jobs
-const concurrency = 5; // Set the desired concurrency level
+const concurrency = 2; // Set the desired concurrency level
 export const ocrQueue = new Queue('ocr-queue', {
   redis: { host: '127.0.0.1', port: 6379 },
   settings: {

@@ -30,27 +30,36 @@ const upload = multer({
 
 export function uploadRoute(app) {
   // Accept both "frame" (from live camera) and "image" (manual upload)
-  app.post('/upload', upload.single('frame'), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).send('No image file uploaded.');
+  app.post(
+    '/upload',
+    upload.fields([
+      { name: 'frame', maxCount: 1 },
+      { name: 'image', maxCount: 1 }
+    ]),
+    async (req, res) => {
+      try {
+        // Accept file from either field
+        const file = (req.files && (req.files['frame']?.[0] || req.files['image']?.[0])) || null;
+        if (!file) {
+          return res.status(400).send('No image file uploaded.');
+        }
+
+        const imagePath = file.path;
+        // console.log('Queueing uploaded frame:', imagePath);
+
+        // Add OCR job to the queue
+        const job = await ocrQueue.add({ imagePath });
+
+        // Wait for job completion and respond (fully async/await)
+        const result = await job.finished();
+        res.json({
+          ...result,
+          filename: file.originalname
+        });
+      } catch (error) {
+        console.error('OCR Error:', error);
+        res.status(500).send('Error processing the image.');
       }
-
-      const imagePath = req.file.path;
-      // console.log('Queueing uploaded frame:', imagePath);
-
-      // Add OCR job to the queue
-      const job = await ocrQueue.add({ imagePath });
-
-      // Wait for job completion and respond (fully async/await)
-      const result = await job.finished();
-      res.json({
-        ...result,
-        filename: req.file.originalname
-      });
-    } catch (error) {
-      console.error('OCR Error:', error);
-      res.status(500).send('Error processing the image.');
     }
-  });
+  );
 }

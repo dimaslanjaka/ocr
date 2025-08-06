@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs-extra';
 import JsonDB from './jsonDb.js';
-import { md5 } from 'sbg-utility';
+import crypto from 'crypto';
 
 // Banned voucher codes (normalized, no spaces)
 const BANNED_VOUCHERS = new Set(['1234123412341234', '1234123422341234']);
@@ -43,6 +43,15 @@ export function extractVoucherCodes(text, outputDir) {
     }
   }
   return result;
+}
+
+/**
+ * Generate an MD5 hash of the given string.
+ * @param {string} str
+ * @returns {string}
+ */
+export function md5(str) {
+  return crypto.createHash('md5').update(str, 'utf8').digest('hex');
 }
 
 export function safePrint(message, isError = false) {

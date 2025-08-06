@@ -23,6 +23,10 @@
                 <i class="fas fa-folder-open text-blue-600 mr-2"></i>Upload Image File
             </h2>
             <form id="uploadForm" class="space-y-4" enctype="multipart/form-data">
+                <div class="flex items-center mb-4">
+                    <input type="checkbox" id="useCamera" class="mr-2" checked>
+                    <label for="useCamera" class="text-sm text-gray-700 select-none cursor-pointer">Use camera (show camera option on mobile)</label>
+                </div>
                 <div class="flex items-center justify-center w-full">
                     <label for="imageFile" id="dropArea" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-blue-400 transition-colors">
                         <div class="flex flex-col items-center justify-center pt-5 pb-6">
@@ -30,7 +34,7 @@
                             <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
                             <p class="text-xs text-gray-500">PNG, JPG or JPEG (MAX. 10MB)</p>
                         </div>
-                        <input id="imageFile" name="image" type="file" class="hidden" accept="image/*" required />
+                        <input id="imageFile" name="image" type="file" class="hidden" required />
                     </label>
                 </div>
                 <div id="fileName" class="text-sm text-green-600 text-center"></div>
@@ -57,5 +61,21 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
     <script src="js/upload.global.js"></script>
+    <script>
+    // Toggle capture attribute based on checkbox
+    document.addEventListener('DOMContentLoaded', function () {
+      const useCamera = document.getElementById('useCamera');
+      const imageFile = document.getElementById('imageFile');
+      function updateCapture() {
+        if (useCamera.checked) {
+          imageFile.setAttribute('capture', 'environment');
+        } else {
+          imageFile.removeAttribute('capture');
+        }
+      }
+      useCamera.addEventListener('change', updateCapture);
+      updateCapture(); // Set initial state
+    });
+    </script>
 </body>
 </html>

@@ -32,6 +32,28 @@ export function uploadRoute(app) {
   // Accept both "frame" (from live camera) and "image" (manual upload)
   app.post(
     '/upload',
+    async (req, res, next) => {
+      // Accept JSON or urlencoded with imageUrl
+      const isJson = req.is('application/json');
+      const isUrlEncoded = req.is('application/x-www-form-urlencoded');
+      const imageUrl = req.body && req.body.imageUrl;
+      if ((isJson || isUrlEncoded) && imageUrl) {
+        try {
+          if (!imageUrl) {
+            return res.status(400).send('No imageUrl provided.');
+          }
+          // Add OCR job to the queue and respond immediately with jobId
+          const job = await ocrQueue.add({ imageUrl });
+          res.json({ jobId: job.id });
+        } catch (error) {
+          console.error('OCR Error:', error);
+          res.status(500).send('Error processing the image URL.');
+        }
+      } else {
+        // Pass to multer for file upload
+        next();
+      }
+    },
     upload.fields([
       { name: 'frame', maxCount: 1 },
       { name: 'image', maxCount: 1 }
@@ -45,15 +67,10 @@ export function uploadRoute(app) {
         }
 
         const imagePath = file.path;
-        // console.log('Queueing uploaded frame:', imagePath);
-
-        // Add OCR job to the queue
+        // Add OCR job to the queue and respond immediately with jobId
         const job = await ocrQueue.add({ imagePath });
-
-        // Wait for job completion and respond (fully async/await)
-        const result = await job.finished();
         res.json({
-          ...result,
+          jobId: job.id,
           filename: file.originalname
         });
       } catch (error) {
@@ -62,4 +79,23 @@ export function uploadRoute(app) {
       }
     }
   );
+
+  // Endpoint to get OCR result by jobId
+  app.get('/result/:jobId', async (req, res) => {
+    try {
+      const job = await ocrQueue.getJob(req.params.jobId);
+      if (!job) return res.status(404).json({ status: 'not_found' });
+
+      const state = await job.getState();
+      if (state === 'completed') {
+        return res.json({ status: 'completed', result: job.returnvalue });
+      } else if (state === 'failed') {
+        return res.json({ status: 'failed', error: job.failedReason });
+      } else {
+        return res.json({ status: 'pending' });
+      }
+    } catch (err) {
+      res.status(500).json({ status: 'error', error: err.message });
+    }
+  });
 }

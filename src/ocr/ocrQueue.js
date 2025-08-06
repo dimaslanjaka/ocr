@@ -1,10 +1,8 @@
 import Queue from 'bull';
+import { spawnAsync } from 'cross-spawn';
 import fs from 'fs-extra';
-import path from 'path';
-import { getImagePathFromUrlOrLocal, recognizeImage2 } from '../ocr/tesseract.js';
-import { optimizeForOCR } from './image_utils/optimize-image.js';
+import path from 'upath';
 import { extractVoucherCodes } from '../database/VoucherDatabase.js';
-import { noop } from 'sbg-utility';
 
 // Tesseract configuration
 const _config = {
@@ -14,6 +12,7 @@ const _config = {
 };
 
 // Create a Bull queue for OCR jobs
+const concurrency = 5; // Set the desired concurrency level
 export const ocrQueue = new Queue('ocr-queue', {
   redis: { host: '127.0.0.1', port: 6379 },
   settings: {
@@ -38,12 +37,30 @@ ocrQueue.on('failed', (job, err) => {
 });
 
 // OCR worker
-ocrQueue.process(async (job) => {
+ocrQueue.process(concurrency, async (job) => {
   const { imagePath, imageUrl } = job.data;
   const input = imagePath || imageUrl;
   console.log(`[OCR QUEUE] Processing job: ${job.id}, input: ${input}`);
   try {
-    const result = await _nodeOcr(input);
+    const args = [path.join(process.cwd(), 'src/ocr/cli.js'), input];
+    console.log(`[OCR RUN] node ${args.join(' ')}`);
+    const result = await spawnAsync('node', args, {
+      stdio: 'pipe'
+    })
+      .then((res) => {
+        const vouchers = res.output.split(/\r?\n/).flatMap((line) => extractVoucherCodes(line, 'tmp/extract-vouchers'));
+        return {
+          text: res.output,
+          vouchers
+        };
+      })
+      .finally(async () => {
+        try {
+          return await fs.rm(imagePath, { force: true, recursive: true });
+        } catch {
+          // Ignore errors if the file cannot be removed
+        }
+      });
     await job.progress(100);
     return result;
   } catch (error) {
@@ -51,34 +68,3 @@ ocrQueue.process(async (job) => {
     throw error; // This will mark the job as failed
   }
 });
-
-// OCR job processing functions
-async function _nodeOcr(imagePathOrUrl) {
-  // Extract image if URL, otherwise return local path
-  const imagePath = await getImagePathFromUrlOrLocal(imagePathOrUrl);
-  console.log(`[OCR QUEUE] Processing image: ${imagePath}`);
-  const filename = path.basename(imagePath);
-  try {
-    // const text = await recognizeImagePython(imagePath, config);
-    const optimizedImagePath = path.join(process.cwd(), `tmp/tesseract/optimized/${filename}`);
-    await optimizeForOCR(imagePath, optimizedImagePath);
-    const options = { outputDir: 'tmp/tesseract', split: true };
-    const result = await recognizeImage2(optimizedImagePath, options);
-    const cleanText = Object.values(result).flatMap((text) =>
-      text
-        .split('\n')
-        .map((line) => line.trim())
-        .filter(Boolean)
-    );
-    const vouchers = cleanText.flatMap((line) => extractVoucherCodes(line, 'tmp/extract-vouchers'));
-    setTimeout(() => {
-      fs.rm(imagePath, { force: true }).catch(noop);
-    }, 5000);
-    return { text: cleanText.join('\n'), vouchers };
-  } catch (error) {
-    setTimeout(() => {
-      fs.rm(imagePath, { force: true }).catch(noop);
-    }, 5000);
-    throw error;
-  }
-}

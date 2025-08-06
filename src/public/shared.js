@@ -20,15 +20,26 @@ export function hideLoading() {
 
 /**
  * Display the OCR result text in the result area.
- * @param {string} text - The text to display. If empty, shows a default message.
+ * @param {any} data - The text to display. If empty, shows a default message.
  */
-export function showResult(text) {
+export function showResult(data) {
   clearMessages();
   const rootResult = document.getElementById('result');
   rootResult.innerHTML = ''; // Clear previous content
 
+  console.log('showResult called with text:', data);
+
+  let resultText = 'No text found in the image.';
+  if (typeof data === 'string') {
+    resultText = data; // If data is a string, use it directly
+  } else if (data.result && data.result.text) {
+    resultText = data.result.text; // Use text from result object
+  } else if (data.text) {
+    resultText = data.text; // Use text from data object
+  }
+
   const voucherCodes = [];
-  for (const line of text.split(/\r?\n/)) {
+  for (const line of resultText.split(/\r?\n/)) {
     const vouchers = extractVoucherCodes(line, { filterBanned: true });
     if (vouchers.length > 0) {
       voucherCodes.push(...vouchers);
@@ -59,7 +70,7 @@ export function showResult(text) {
   // Create OCR text display
   const textDisplay = document.createElement('div');
   textDisplay.className = 'text-sm text-gray-700';
-  textDisplay.textContent = text || 'No text found in the image.';
+  textDisplay.textContent = resultText;
   rootResult.appendChild(textDisplay);
 }
 

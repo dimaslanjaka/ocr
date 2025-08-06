@@ -41,11 +41,7 @@ async function pollOcrResult(jobId, filename) {
       const res = await fetch(`/result/${jobId}`);
       const data = await res.json();
       if (data.status === 'completed') {
-        if (data.text) {
-          showResult(data.text);
-        } else if (data.result && data.result.text) {
-          showResult(data.result.text);
-        }
+        showResult(data);
         showSuccess(`Successfully processed: ${filename}`);
         return;
       } else if (data.status === 'failed') {

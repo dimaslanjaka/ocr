@@ -17,12 +17,12 @@
         <label for="cameraSelect" class="mb-2 font-medium"><i class="fa-duotone fa-camera-cctv mr-2"></i>Select Camera:</label>
         <select id="cameraSelect" class="mb-4 p-2 rounded border border-gray-300 w-full max-w-md"></select>
         <div class="flex gap-4 mt-2">
-          <button id="startStreamBtn" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 flex items-center"><i class="fa-duotone fa-play mr-2"></i>Start Stream</button>
-          <button id="stopStreamBtn" class="px-4 py-2 bg-red-600 text-white rounded shadow hover:bg-red-700 flex items-center"><i class="fa-duotone fa-stop mr-2"></i>Stop Stream</button>
+          <button id="startStreamBtn" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 flex items-center"><i class="fa-duotone fa-play"></i><span class="sr-only ml-2">Start</span></button>
+          <button id="stopStreamBtn" class="px-4 py-2 bg-red-600 text-white rounded shadow hover:bg-red-700 flex items-center"><i class="fa-duotone fa-stop"></i><span class="sr-only ml-2">Stop</span></button>
         </div>
       </div>
-      <div class="w-full max-w-7xl flex justify-center">
-        <video id="liveVideo" autoplay playsinline class="rounded shadow-lg w-full aspect-video h-auto min-h-[200px] max-h-[80vh] sm:min-h-[300px] sm:rounded-lg sm:shadow-lg sm:max-w-7xl"></video>
+      <div class="w-screen flex justify-center items-center">
+        <video id="liveVideo" autoplay playsinline class="rounded shadow-lg w-full h-[calc(100vw*0.5625)] max-h-[90vh] min-h-[300px] object-contain bg-black"></video>
       </div>
     </div>
     <script>

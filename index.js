@@ -1,5 +1,5 @@
-import './src/global_shim.js';
 import 'dotenv/config';
+import './src/global_shim.js';
 
 ///
 import { spawn } from 'child_process';
@@ -10,10 +10,9 @@ import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { WebSocketServer } from 'ws';
-import { indexFO, liveFO } from './src/routes/frontend.js';
+import { collectRouter } from './src/routes/collect.js';
 import { uploadRoute } from './src/routes/upload.js';
 import { urlOcrRoute } from './src/routes/url.js';
-import { collectRouter } from './src/routes/collect.js';
 
 // ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -168,9 +167,13 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 // Routes
-app.get('/', indexFO);
+app.get('/', (req, res) => {
+  res.redirect('/index.html');
+});
+app.get('/live', (req, res) => {
+  res.redirect('/live.html');
+});
 app.get('/url', urlOcrRoute);
-app.get('/live', liveFO);
 app.router.use('/collect', collectRouter);
 uploadRoute(app);
 

@@ -21,7 +21,7 @@ const dbQueue = new Queue('collect-queue', {
  * @param {import('express').Response} res - Express response object
  */
 const index = (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'public', 'collect.html'));
+  res.redirect('/collect.html');
 };
 
 // Queue processor for glob jobs

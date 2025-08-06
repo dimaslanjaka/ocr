@@ -65,16 +65,17 @@ function createRemovableList(items) {
   list.className = 'flex flex-wrap gap-2 my-2';
   items.forEach(({ text, onRemove }) => {
     const listItem = document.createElement('li');
-    listItem.className = 'inline-flex items-center bg-gray-100 border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 shadow-sm';
+    // Responsive: full width on mobile, inline-flex on larger screens
+    listItem.className = 'w-full sm:w-auto inline-flex flex-col sm:flex-row items-stretch sm:items-center bg-gray-100 border border-gray-300 rounded px-3 py-1 text-sm text-gray-800 shadow-sm';
 
     const codeSpan = document.createElement('span');
-    codeSpan.className = 'mr-2 font-mono';
+    codeSpan.className = 'mb-2 sm:mb-0 mr-0 sm:mr-2 font-mono break-all';
     codeSpan.textContent = text;
     listItem.appendChild(codeSpan);
 
     const removeButton = document.createElement('button');
     removeButton.type = 'button';
-    removeButton.className = 'ml-1 inline-flex items-center justify-center p-1 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400';
+    removeButton.className = 'self-end sm:self-auto ml-0 sm:ml-1 inline-flex items-center justify-center p-1 rounded hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400';
     removeButton.title = 'Remove';
     removeButton.onclick = function(e) {
       onRemove(e);

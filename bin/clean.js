@@ -11,3 +11,7 @@ glob
   .on('data', (file) => {
     fs.rmSync(file, { force: true, recursive: true });
   });
+
+if (fs.existsSync('public/js')) {
+  fs.rmSync('public/js', { force: true, recursive: true });
+}

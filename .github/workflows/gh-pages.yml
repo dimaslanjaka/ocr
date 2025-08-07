@@ -55,11 +55,6 @@ jobs:
       - name: Build project
         run: yarn build
 
-      - name: Copy libs to public/node_modules
-        run: |
-          mkdir -p public/node_modules/tesseract.js
-          cp -rL node_modules/tesseract.js/dist/* public/node_modules/tesseract.js/
-
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v4
         with:

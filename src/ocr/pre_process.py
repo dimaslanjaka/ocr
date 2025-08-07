@@ -1,18 +1,58 @@
-from io import BytesIO
+import argparse
 import os
 import sys
+from datetime import datetime
+from io import BytesIO
+from typing import Optional, Union
 import cv2
-import numpy as np
-from PIL import Image
 import imageio.v3 as iio
-import requests
+import numpy as np
 import pytesseract
-import argparse
+import requests
+from colorama import Fore, Style
+from colorama import init as colorama_init
+from PIL import Image
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from src.ocr.image_utils import dewarp_image
 from src.utils.file import get_relative_path
+
+
+def get_job_log_path(jobId: str) -> str:
+    """
+    Returns the absolute path to the log file for a given job ID.
+    """
+    output_dir = get_relative_path("tmp/logs")
+    os.makedirs(output_dir, exist_ok=True)
+    return os.path.join(output_dir, f"{jobId}.log")
+
+def log(jobId: str, resetOrMsg: Union[str, bool], message: Optional[str] = None):
+    """
+    Log messages with a job ID for tracking.
+
+    Args:
+        jobId (str): Unique identifier for the job.
+        resetOrMsg (Union[str, bool]):
+            - If True (bool), reset the log file for this job ID.
+            - If str, append this string as a log message.
+        message (Optional[str]):
+            - If resetOrMsg is not a string, this message will be appended to the log file.
+    """
+    log_file = get_job_log_path(jobId)
+    if isinstance(resetOrMsg, bool) and resetOrMsg:
+        date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Reset the log file if reset is True
+        with open(log_file, "w") as f:
+            f.write(f"Log for job {jobId} {date}:\n\n")
+    elif isinstance(resetOrMsg, str):
+        # Append the message to the log file
+        with open(log_file, "a") as f:
+            f.write(f"{resetOrMsg}\n")
+    if message is not None:
+        # Append the message to the log file
+        with open(log_file, "a") as f:
+            f.write(f"{message}\n")
 
 
 def get_image_from_url_or_path(image_source: str, cache_dir: str= "tmp/downloaded_images") -> np.ndarray:
@@ -72,7 +112,7 @@ def get_image_from_url_or_path(image_source: str, cache_dir: str= "tmp/downloade
     return image
 
 
-def main(imagePathOrUrl="test/fixtures/noise.avif", crop: bool = False, output_dir: str = "tmp/pre-process"):
+def main(imagePathOrUrl="test/fixtures/noise.avif", crop: bool = False, output_dir: str = "tmp/pre-process", jobId: str = "default_job"):
     image = get_image_from_url_or_path(imagePathOrUrl)
     basename = os.path.splitext(os.path.basename(imagePathOrUrl))[0] + ".png"
 
@@ -80,7 +120,7 @@ def main(imagePathOrUrl="test/fixtures/noise.avif", crop: bool = False, output_d
     converted_output = os.path.normpath(os.path.join(output_dir, "converted", basename))
     os.makedirs(os.path.dirname(converted_output), exist_ok=True)
     cv2.imwrite(converted_output, image)
-    print(f"Image converted to PNG and saved to {converted_output}")
+    log(jobId, f"Image converted to PNG and saved to {converted_output}")
     # Optionally reload the PNG to ensure all further processing uses the PNG version
     image = cv2.imread(converted_output, cv2.IMREAD_COLOR)
     if image is None:
@@ -91,20 +131,20 @@ def main(imagePathOrUrl="test/fixtures/noise.avif", crop: bool = False, output_d
     blurred_output = os.path.join(output_dir, "blurred", basename)
     os.makedirs(os.path.dirname(blurred_output), exist_ok=True)
     cv2.imwrite(blurred_output, image)
-    print(f"Blurred image saved to {blurred_output}")
+    log(jobId, f"Blurred image saved to {blurred_output}")
 
     # Dewarp the image
     result_dewarp = dewarp_image(image)
     if result_dewarp is not None:
         dewarped_image, dewarped_path = result_dewarp
-        print(f"Dewarped image saved to {dewarped_path}")
+        log(jobId, f"Dewarped image saved to {dewarped_path}")
         # Convert to numpy array if needed
         if isinstance(dewarped_image, Image.Image):
             image = np.array(dewarped_image)
         else:
             image = dewarped_image
     else:
-        print("Dewarping failed: dewarp_image returned None")
+        log(jobId, "Dewarping failed: dewarp_image returned None")
 
     # Run OCR
     ocr_text = pytesseract.image_to_string(image, lang="eng", config="--psm 6")
@@ -124,9 +164,19 @@ def main(imagePathOrUrl="test/fixtures/noise.avif", crop: bool = False, output_d
         for name, crop_img in crops:
             crop_output_path = os.path.join(crops_dir, f"{name}.png")
             cv2.imwrite(crop_output_path, crop_img)
-            print(f"Cropped image '{name}' saved to {crop_output_path}")
+            log(jobId, f"Cropped image '{name}' saved to {crop_output_path}")
 
-    print(f"OCR output:\n\n{ocr_text}")
+    log(jobId, f"OCR output:\n\n{ocr_text}")
+    # Colorize jobId and log path in the output using colorama (green for jobId, cyan for path)
+    try:
+        colorama_init()
+        GREEN = Fore.GREEN
+        CYAN = Fore.CYAN
+        RESET = Style.RESET_ALL
+    except ImportError:
+        GREEN = CYAN = RESET = ''
+    log_path = get_job_log_path(jobId)
+    print(f"Log for job {GREEN}{jobId}{RESET} saved to {CYAN}{log_path}{RESET}")
 
 
 if __name__ == "__main__":
@@ -149,9 +199,16 @@ if __name__ == "__main__":
         default="tmp/pre-process",
         help="Directory to save processed images and crops",
     )
+    parser.add_argument(
+        '-id',
+        '--jobId',
+        default="default_job",
+        help="Unique identifier for the job, used for logging",
+    )
     args = parser.parse_args()
     main(
         imagePathOrUrl=args.image,
         crop=args.crop,
-        output_dir=args.output_dir
+        output_dir=args.output_dir,
+        jobId=args.jobId
     )

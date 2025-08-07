@@ -10,10 +10,7 @@
     "moduleResolution": "node",
 
     // Specify directories for type definitions
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
-    ],
+    "typeRoots": ["./types", "./node_modules/@types"],
 
     // Enable importing JSON files as modules
     "resolveJsonModule": true,
@@ -51,9 +48,9 @@
   },
   "include": [
     // Include specific directories and files in the compilation
-    "./src",
+    "./src/**/*",
     "./index.js",
-    "./test"
+    "./test/**/*"
   ],
   "exclude": [
     // Exclude specific directories and patterns from the compilation

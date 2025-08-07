@@ -40,16 +40,16 @@ def log(jobId: str, resetOrMsg: Union[str, bool], message: Optional[str] = None)
             - If resetOrMsg is not a string, this message will be appended to the log file.
     """
     log_file = get_job_log_path(jobId)
-    if isinstance(resetOrMsg, bool) and resetOrMsg:
+    if (isinstance(resetOrMsg, bool) and resetOrMsg) or not os.path.exists(log_file):
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         # Reset the log file if reset is True
         with open(log_file, "w") as f:
             f.write(f"Log for job {jobId} {date}:\n\n")
-    elif isinstance(resetOrMsg, str):
+    if isinstance(resetOrMsg, str):
         # Append the message to the log file
         with open(log_file, "a") as f:
             f.write(f"{resetOrMsg}\n")
-    if message is not None:
+    if isinstance(message, str):
         # Append the message to the log file
         with open(log_file, "a") as f:
             f.write(f"{message}\n")
@@ -206,6 +206,9 @@ if __name__ == "__main__":
         help="Unique identifier for the job, used for logging",
     )
     args = parser.parse_args()
+    # Reset the log file for this job ID
+    log(args.jobId, True)
+    # Call the main function with the parsed arguments
     main(
         imagePathOrUrl=args.image,
         crop=args.crop,

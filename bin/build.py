@@ -105,7 +105,7 @@ def build_scanner():
         "--noinclude-unittest-mode=allow",
         "--experimental=debug-report-traceback",
         *map(str, nuitka_os_args),
-        "src/ocr/focus_pytesseract.py",
+        "src/ocr/cli.py",
     ]
     _log_info(
         f"Running Nuitka build: {' '.join(shlex.quote(str(x)) for x in nuitka_cmd)}"

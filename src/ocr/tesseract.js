@@ -70,32 +70,117 @@ export async function getWorker() {
 }
 
 /**
- * Recognize text from an image file or URL using a shared Tesseract.js worker and optional image cropping variants.
- * Downloads the image if a URL is provided, applies cropping if requested, and returns OCR results for each variant and the original image.
+ * Recognizes text from an image file or URL using a shared Tesseract.js worker, with optional image cropping and processed image outputs.
  *
- * @param {string} imagePathOrUrl - Path to the image file or image URL.
- * @param {Object} options - Options for OCR processing.
- * @param {string} [options.outputDir] - Directory to store cropped image variants (default: 'tmp/tesseract').
- * @param {boolean} [options.split=false] - Whether to crop the image into variants and OCR each one.
- * @returns {Promise<Object<string, string>>} Promise resolving to an object mapping variant names or image paths to recognized text.
+ * - Downloads the image if a URL is provided.
+ * - Optionally crops the image into variants and performs OCR on each.
+ * - If `imageGrey`, `imageColor`, or `imageBinary` are enabled, saves and OCRs each processed image type separately for each variant and the original image.
+ * - Returns an object mapping each variant and processed image type to its recognized text.
+ *
+ * @async
+ * @param {string} imagePathOrUrl Path to the image file or image URL.
+ * @param {Object} options Options for OCR processing.
+ * @param {string} [options.outputDir] Directory to store cropped/processed image variants (default: 'tmp/tesseract').
+ * @param {boolean} [options.split=false] Whether to crop the image into variants and OCR each one.
+ * @param {boolean} [options.imageGrey=false] Whether to process and OCR the greyscale image output.
+ * @param {boolean} [options.imageColor=false] Whether to process and OCR the color image output.
+ * @param {boolean} [options.imageBinary=false] Whether to process and OCR the binary image output.
+ * @param {boolean} [options.rotateAuto=false] Whether to enable automatic rotation detection.
+ * @returns {Promise<Record<string, string>>} Resolves to an object mapping variant names and processed image types to recognized text.
  */
 export async function recognizeImage2(imagePathOrUrl, options) {
   // Extract image if URL, otherwise return local path
   let imagePath = await getImagePathFromUrlOrLocal(imagePathOrUrl);
-  const { outputDir = path.join(process.cwd(), 'tmp/tesseract'), split = false } = options;
+  const {
+    outputDir = path.join(process.cwd(), 'tmp/tesseract'),
+    split = false,
+    imageGrey = false,
+    imageColor = false,
+    imageBinary = false,
+    rotateAuto = false
+  } = options;
   const texts = {};
   const workerInstance = await getWorker();
+  /**
+   * Recognize text from an image using the Tesseract worker instance.
+   * @param {import('tesseract.js').ImageLike} image
+   */
+  const workerImpl = async (image) => {
+    const result = await workerInstance.recognize(
+      image,
+      { rotateAuto: rotateAuto },
+      { imageColor: imageColor, imageGrey: imageGrey, imageBinary: imageBinary }
+    );
+    return result.data;
+  };
+
+  /**
+   * Converts a base64-encoded image string (data URL) to a Uint8Array for saving to disk.
+   *
+   * @param {string} imageSrc - The base64-encoded image string (data URL, e.g. 'data:image/png;base64,...').
+   * @returns {Uint8Array} The decoded image data as a Uint8Array.
+   */
+  const convertImage = (imageSrc) => {
+    const data = atob(imageSrc.split(',')[1])
+      .split('')
+      .map((c) => c.charCodeAt(0));
+
+    return new Uint8Array(data);
+  };
 
   if (split) {
     const cropVariants = await cropImageVariants(imagePath, outputDir);
     for (const variant of cropVariants) {
-      const result = await workerInstance.recognize(variant.outputPath);
-      texts[variant.name] = result.data.text;
+      const result = await workerImpl(variant.outputPath);
+      texts[variant.name] = result.text;
+      // Re-process imageGrey, imageColor, imageBinary if needed
+      if (imageGrey || imageColor || imageBinary) {
+        // Save each available processed image type separately
+        if (result.imageGrey) {
+          const imageData = convertImage(result.imageGrey);
+          const outputPath = path.join(outputDir, `${variant.name}-grey.png`);
+          await fs.writeFile(outputPath, imageData);
+          texts[`${variant.name}-grey`] = (await workerImpl(outputPath)).text;
+        }
+        if (result.imageColor) {
+          const imageData = convertImage(result.imageColor);
+          const outputPath = path.join(outputDir, `${variant.name}-color.png`);
+          await fs.writeFile(outputPath, imageData);
+          texts[`${variant.name}-color`] = (await workerImpl(outputPath)).text;
+        }
+        if (result.imageBinary) {
+          const imageData = convertImage(result.imageBinary);
+          const outputPath = path.join(outputDir, `${variant.name}-binary.png`);
+          await fs.writeFile(outputPath, imageData);
+          texts[`${variant.name}-binary`] = (await workerImpl(outputPath)).text;
+        }
+      }
     }
   }
 
-  const result = await workerInstance.recognize(imagePath);
-  texts[imagePath] = result.data.text;
+  const result = await workerImpl(imagePath);
+  texts[imagePath] = result.text;
+  // Re-process imageGrey, imageColor, imageBinary if needed
+  if (imageGrey || imageColor || imageBinary) {
+    if (result.imageGrey) {
+      const imageData = convertImage(result.imageGrey);
+      const outputPath = path.join(outputDir, 'original-grey.png');
+      await fs.writeFile(outputPath, imageData);
+      texts['original-grey'] = (await workerImpl(outputPath)).text;
+    }
+    if (result.imageColor) {
+      const imageData = convertImage(result.imageColor);
+      const outputPath = path.join(outputDir, 'original-color.png');
+      await fs.writeFile(outputPath, imageData);
+      texts['original-color'] = (await workerImpl(outputPath)).text;
+    }
+    if (result.imageBinary) {
+      const imageData = convertImage(result.imageBinary);
+      const outputPath = path.join(outputDir, 'original-binary.png');
+      await fs.writeFile(outputPath, imageData);
+      texts['original-binary'] = (await workerImpl(outputPath)).text;
+    }
+  }
 
   return texts;
 }

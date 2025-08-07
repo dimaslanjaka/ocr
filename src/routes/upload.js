@@ -1,7 +1,11 @@
+import express from 'express';
 import multer from 'multer';
 import fs from 'fs-extra';
 import path from 'path';
 import { ocrQueue } from '../ocr/ocrQueue.js';
+import { getUniqueUserId } from '../utils/express-utils.js';
+
+const router = express.Router();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -28,74 +32,69 @@ const upload = multer({
   }
 });
 
-export function uploadRoute(app) {
-  // Accept both "frame" (from live camera) and "image" (manual upload)
-  app.post(
-    '/upload',
-    async (req, res, next) => {
-      // Accept JSON or urlencoded with imageUrl
-      const isJson = req.is('application/json');
-      const isUrlEncoded = req.is('application/x-www-form-urlencoded');
-      const imageUrl = req.body && req.body.imageUrl;
-      if ((isJson || isUrlEncoded) && imageUrl) {
-        try {
-          if (!imageUrl) {
-            return res.status(400).send('No imageUrl provided.');
-          }
-          // Add OCR job to the queue and respond immediately with jobId
-          const job = await ocrQueue.add({ imageUrl });
-          res.json({ jobId: job.id });
-        } catch (error) {
-          console.error('OCR Error:', error);
-          res.status(500).send('Error processing the image URL.');
-        }
-      } else {
-        // Pass to multer for file upload
-        next();
-      }
-    },
-    upload.fields([
-      { name: 'frame', maxCount: 1 },
-      { name: 'image', maxCount: 1 }
-    ]),
-    async (req, res) => {
+// POST /upload
+router.post(
+  '/',
+  async (req, res, next) => {
+    const isJson = req.is('application/json');
+    const isUrlEncoded = req.is('application/x-www-form-urlencoded');
+    const imageUrl = req.body && req.body.imageUrl;
+    if ((isJson || isUrlEncoded) && imageUrl) {
       try {
-        // Accept file from either field
-        const file = (req.files && (req.files['frame']?.[0] || req.files['image']?.[0])) || null;
-        if (!file) {
-          return res.status(400).send('No image file uploaded.');
+        if (!imageUrl) {
+          return res.status(400).send('No imageUrl provided.');
         }
-
-        const imagePath = file.path;
-        // Add OCR job to the queue and respond immediately with jobId
-        const job = await ocrQueue.add({ imagePath });
-        res.json({
-          jobId: job.id,
-          filename: file.originalname
-        });
+        const userId = getUniqueUserId(req);
+        const job = await ocrQueue.add(userId, { imageUrl });
+        res.json({ jobId: job.id });
       } catch (error) {
         console.error('OCR Error:', error);
-        res.status(500).send('Error processing the image.');
+        res.status(500).send('Error processing the image URL.');
       }
+    } else {
+      next();
     }
-  );
-
-  // Endpoint to get OCR result by jobId
-  app.get('/result/:jobId', async (req, res) => {
+  },
+  upload.fields([
+    { name: 'frame', maxCount: 1 },
+    { name: 'image', maxCount: 1 }
+  ]),
+  async (req, res) => {
     try {
-      const job = await ocrQueue.getJob(req.params.jobId);
-      if (!job) return res.status(404).json({ status: 'not_found' });
-
-      const state = await job.getState();
-      if (state === 'completed') {
-        return res.json({ status: 'completed', result: job.returnvalue });
-      } else if (state === 'failed') {
-        return res.json({ status: 'failed', error: job.failedReason });
-      } else {
-        return res.json({ status: 'pending' });
+      const file = (req.files && (req.files['frame']?.[0] || req.files['image']?.[0])) || null;
+      if (!file) {
+        return res.status(400).send('No image file uploaded.');
       }
-    } catch (err) {
-      res.status(500).json({ status: 'error', error: err.message });
+      const imagePath = file.path;
+      const job = await ocrQueue.add({ imagePath });
+      res.json({
+        jobId: job.id,
+        filename: file.originalname
+      });
+    } catch (error) {
+      console.error('OCR Error:', error);
+      res.status(500).send('Error processing the image.');
     }
-  });
-}
+  }
+);
+
+// GET /result/:jobId
+router.get('/result/:jobId', async (req, res) => {
+  try {
+    const job = await ocrQueue.getJob(req.params.jobId);
+    if (!job) return res.status(404).json({ status: 'not_found' });
+    const state = await job.getState();
+    if (state === 'completed') {
+      return res.json({ status: 'completed', result: job.returnvalue });
+    } else if (state === 'failed') {
+      return res.json({ status: 'failed', error: job.failedReason });
+    } else {
+      return res.json({ status: 'pending' });
+    }
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err.message });
+  }
+});
+
+export default router;
+export { router as uploadRoute };

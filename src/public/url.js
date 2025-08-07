@@ -39,7 +39,7 @@ document.getElementById('urlForm').addEventListener('submit', async function (e)
 async function pollForResult(jobId) {
   try {
     const baseUrl = getBaseUrl();
-    const response = await fetch(`${baseUrl}/result/${jobId}`);
+    const response = await fetch(`${baseUrl}/upload/result/${jobId}`);
     if (response.ok) {
       const result = await response.json();
       if (result.status === 'completed') {

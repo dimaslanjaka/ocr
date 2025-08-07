@@ -156,7 +156,7 @@ async function captureImage() {
 
 async function pollForResult(jobId) {
   try {
-    const response = await fetch(`${baseUrl}/result/${jobId}`);
+    const response = await fetch(`${baseUrl}/upload/result/${jobId}`);
     if (response.ok) {
       const result = await response.json();
       if (result.status === 'completed') {

@@ -41,7 +41,7 @@ async function pollOcrResult(jobId, filename) {
   while (true) {
     try {
       const baseUrl = getBaseUrl();
-      const res = await fetch(`${baseUrl}/result/${jobId}`);
+      const res = await fetch(`${baseUrl}/upload/result/${jobId}`);
       const data = await res.json();
       if (data.status === 'completed') {
         showResult(data);

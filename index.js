@@ -177,7 +177,7 @@ app.get('/live', (req, res) => {
 });
 app.get('/url', urlOcrRoute);
 app.router.use('/collect', collectRouter);
-uploadRoute(app);
+app.router.use('/upload', uploadRoute);
 app.get('/build', async (req, res) => {
   // Get checksum src folder
   const srcFolder = path.join(__dirname, 'src');

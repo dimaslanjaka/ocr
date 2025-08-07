@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/pyright/refs/heads/main/packages/vscode-pyright/schemas/pyrightconfig.schema.json",
+  "include": ["src"],
+  "extraPaths": ["packages/proxy-checker-python", "packages/proxy-hunter-python", "packages/rsa-utility"],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "src/experimental",
+    "src/typestubs",
+    "build",
+    "app",
+    "dist",
+    "**/tmp",
+    "**/vendor"
+  ],
+  "ignore": ["src/oldstuff"],
+  "stubPath": "src/stubs",
+  "defineConstant": {
+    "DEBUG": true
+  },
+  "reportMissingImports": "error",
+  "reportMissingTypeStubs": false,
+  "useLibraryCodeForTypes": true,
+  "venvPath": "./venv",
+  "venv": "venv"
+}

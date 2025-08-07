@@ -36,11 +36,10 @@
   "code-runner.executorMap": {
     "javascript": "node",
     "typescript": "node --loader ts-node/esm",
-    "python": "py -u"
+    "python": "ppy -u"
   },
   "code-runner.executorMapByGlob": {
     "**/*.test.js": "npm test --"
   },
-  "eslint.useFlatConfig": true,
-  "python.analysis.typeCheckingMode": "basic"
+  "eslint.useFlatConfig": true
 }

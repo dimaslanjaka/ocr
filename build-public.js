@@ -1,11 +1,14 @@
 import alias from 'esbuild-plugin-alias';
+import { nodeModulesPolyfillPlugin } from 'esbuild-plugins-node-modules-polyfill';
+import * as glob from 'glob';
+import { createRequire } from 'module';
 import { dirname } from 'path';
+import sass from 'sass';
+import { writefile } from 'sbg-utility';
 import { build, defineConfig } from 'tsup';
 import path from 'upath';
 import { fileURLToPath } from 'url';
 import packageJson from './package.json' with { type: 'json' };
-import { createRequire } from 'module';
-import { nodeModulesPolyfillPlugin } from 'esbuild-plugins-node-modules-polyfill';
 
 // Dynamically resolve the path to url-browserify and path-browserify for esbuild-plugin-alias
 const require = createRequire(import.meta.url);
@@ -55,3 +58,21 @@ const config = defineConfig({
 (async () => {
   await build({ ...config, entry: ['src/public/**/*.js', 'src/public/**/*.ts'], outDir: 'public/js' });
 })();
+
+glob.stream('src/public/**/*.scss').on('data', (file) => {
+  const outFile = path.join('public/css', path.relative('src/public', file).replace(/\.scss$/, '.css'));
+  sass
+    .compileAsync(file, {
+      outFile,
+      sourceMap: true,
+      outputStyle: 'compressed',
+      includePaths: ['node_modules']
+    })
+    .then((result) => {
+      writefile(outFile, result.css);
+      console.log(`Compiled ${file} to ${outFile}`);
+    })
+    .catch((err) => {
+      console.error(`Error compiling ${file}:`, err);
+    });
+});

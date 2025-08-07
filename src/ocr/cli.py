@@ -15,6 +15,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
+from src.database.VoucherDatabase import extract_voucher_codes
 from src.ocr.image_utils import dewarp_image
 from src.utils.file import get_relative_path
 
@@ -175,7 +176,20 @@ def main(
             cv2.imwrite(crop_output_path, crop_img)
             log(jobId, f"Cropped image '{name}' saved to {crop_output_path}")
 
-    log(jobId, f"OCR output:\n\n{ocr_text}")
+    # Log OCR output with indicator on its own line, OCR result follows on fresh lines
+    log(jobId, "\n[OCR_OUTPUT_START]")
+    log(jobId, ocr_text.rstrip("\n"))
+    log(jobId, "[OCR_OUTPUT_END]\n")
+
+    # Log Vouchers
+    vouchers = extract_voucher_codes(
+        ocr_text, output_dir=os.path.join(output_dir, "vouchers")
+    )
+    vouchers_str = "\n".join(vouchers) if isinstance(vouchers, list) else str(vouchers)
+    log(jobId, "\n[VOUCHER_OUTPUT_START]")
+    log(jobId, vouchers_str)
+    log(jobId, "[VOUCHER_OUTPUT_END]\n")
+
     # Colorize jobId and log path in the output using colorama (green for jobId, cyan for path)
     try:
         colorama_init()

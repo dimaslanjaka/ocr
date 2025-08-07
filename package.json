@@ -32,6 +32,7 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.32.0",
@@ -40,6 +41,7 @@
     "@jest/globals": "^30.0.5",
     "@jest/types": "^30.0.5",
     "@swc/core": "^1.13.3",
+    "@types/babel__core": "^7",
     "@types/babel__preset-env": "^7",
     "@types/bluebird": "^3",
     "@types/crypto-js": "^4",

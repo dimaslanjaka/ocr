@@ -1,5 +1,7 @@
-import { showLoading, hideLoading, showResult, showError, showSuccess, clearMessages } from './shared.js';
+import { getBaseUrl } from '../utils/url.js';
+import { hideLoading, showError, showLoading, showResult, showSuccess } from './shared.js';
 
+const baseUrl = getBaseUrl();
 let cameraStream = null;
 let cameraVideo = null;
 let cameraCanvas = null;
@@ -125,7 +127,7 @@ async function captureImage() {
       try {
         const formData = new FormData();
         formData.append('image', blob, 'camera-capture.jpg');
-        const response = await fetch('/upload', {
+        const response = await fetch(`${baseUrl}/upload`, {
           method: 'POST',
           body: formData
         });
@@ -154,7 +156,7 @@ async function captureImage() {
 
 async function pollForResult(jobId) {
   try {
-    const response = await fetch(`/result/${jobId}`);
+    const response = await fetch(`${baseUrl}/result/${jobId}`);
     if (response.ok) {
       const result = await response.json();
       if (result.status === 'completed') {

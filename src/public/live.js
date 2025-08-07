@@ -1,3 +1,4 @@
+import { getBaseUrl } from '../utils/url.js';
 const videoElement = document.getElementById('liveVideo');
 const cameraSelect = document.getElementById('cameraSelect');
 const startStreamBtn = document.getElementById('startStreamBtn');
@@ -68,7 +69,8 @@ function startFrameCapture() {
         const formData = new FormData();
         formData.append('frame', blob, 'frame.jpg');
 
-        fetch('/upload', {
+        const baseUrl = getBaseUrl();
+        fetch(`${baseUrl}/upload`, {
           method: 'POST',
           body: formData
         }).catch((err) => console.error('Upload failed:', err));

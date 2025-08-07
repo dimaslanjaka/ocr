@@ -1,4 +1,5 @@
-import { showLoading, hideLoading, showResult, showError, showSuccess, clearMessages } from './shared.js';
+import { hideLoading, showError, showLoading, showResult, showSuccess } from './shared.js';
+import { getBaseUrl } from '../utils/url.js';
 
 let cameraStream = null;
 let cameraVideo = null;
@@ -169,7 +170,8 @@ async function captureImage() {
         const formData = new FormData();
         formData.append('image', blob, 'camera-capture.jpg');
 
-        const response = await fetch('/upload', {
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/upload`, {
           method: 'POST',
           body: formData
         });
@@ -210,7 +212,8 @@ document.getElementById('uploadForm').addEventListener('submit', async function 
   showLoading();
 
   try {
-    const response = await fetch('/upload', {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/upload`, {
       method: 'POST',
       body: formData
     });
@@ -240,7 +243,8 @@ async function pollOcrResult(jobId, filename) {
   // Remove maxTries, poll forever until job is done or failed
   while (true) {
     try {
-      const res = await fetch(`/result/${jobId}`);
+      const baseUrl = getBaseUrl();
+      const res = await fetch(`${baseUrl}/result/${jobId}`);
       const data = await res.json();
       if (data.status === 'completed') {
         if (data.text) {
@@ -288,7 +292,8 @@ document.getElementById('urlForm').addEventListener('submit', async function (e)
   showLoading();
 
   try {
-    const response = await fetch(`/url?imageurl=${encodeURIComponent(imageUrl)}`);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/url?imageurl=${encodeURIComponent(imageUrl)}`);
 
     if (response.ok) {
       const text = await response.text();

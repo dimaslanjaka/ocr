@@ -1,3 +1,4 @@
+import { getBaseUrl } from '../utils/url.js';
 import { showLoading, hideLoading, showResult, showError, showSuccess, clearMessages } from './shared.js';
 
 // File upload form handler
@@ -13,7 +14,8 @@ document.getElementById('uploadForm').addEventListener('submit', async function 
   formData.append('image', file);
   showLoading();
   try {
-    const response = await fetch('/upload', {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/upload`, {
       method: 'POST',
       body: formData
     });
@@ -38,7 +40,8 @@ async function pollOcrResult(jobId, filename) {
   // Remove maxTries, poll forever until job is done or failed
   while (true) {
     try {
-      const res = await fetch(`/result/${jobId}`);
+      const baseUrl = getBaseUrl();
+      const res = await fetch(`${baseUrl}/result/${jobId}`);
       const data = await res.json();
       if (data.status === 'completed') {
         showResult(data);

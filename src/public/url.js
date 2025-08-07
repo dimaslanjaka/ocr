@@ -1,3 +1,4 @@
+import { getBaseUrl } from '../utils/url.js';
 import { showLoading, hideLoading, showResult, showError, showSuccess, clearMessages } from './shared.js';
 
 document.getElementById('urlForm').addEventListener('submit', async function (e) {
@@ -10,7 +11,8 @@ document.getElementById('urlForm').addEventListener('submit', async function (e)
   showLoading();
   try {
     // POST to /upload with imageUrl as JSON
-    const response = await fetch('/upload', {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/upload`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imageUrl })
@@ -36,7 +38,8 @@ document.getElementById('urlForm').addEventListener('submit', async function (e)
 
 async function pollForResult(jobId) {
   try {
-    const response = await fetch(`/result/${jobId}`);
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/result/${jobId}`);
     if (response.ok) {
       const result = await response.json();
       if (result.status === 'completed') {

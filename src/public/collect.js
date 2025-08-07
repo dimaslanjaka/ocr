@@ -1,8 +1,10 @@
+import { getBaseUrl } from '../utils/url.js';
+
+const baseUrl = getBaseUrl();
 let latestVouchers;
 async function fetchAndDisplay() {
   try {
-    const urlWithoutParam = window.location.href.split('?')[0];
-    const res = await fetch(`${urlWithoutParam}/get`, { method: 'POST' });
+    const res = await fetch(`${baseUrl}/get`, { method: 'POST' });
     const vouchers = await res.json();
     latestVouchers = vouchers;
     document.getElementById('output').textContent = JSON.stringify(vouchers, null, 2);

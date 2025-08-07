@@ -27,6 +27,7 @@ def get_job_log_path(jobId: str) -> str:
     os.makedirs(output_dir, exist_ok=True)
     return os.path.join(output_dir, f"{jobId}.log")
 
+
 def log(jobId: str, resetOrMsg: Union[str, bool], message: Optional[str] = None):
     """
     Log messages with a job ID for tracking.
@@ -55,7 +56,9 @@ def log(jobId: str, resetOrMsg: Union[str, bool], message: Optional[str] = None)
             f.write(f"{message}\n")
 
 
-def get_image_from_url_or_path(image_source: str, cache_dir: str= "tmp/downloaded_images") -> np.ndarray:
+def get_image_from_url_or_path(
+    image_source: str, cache_dir: str = "tmp/downloaded_images"
+) -> np.ndarray:
     """
     Load an image from a URL or a local file path, with caching for URLs.
 
@@ -82,7 +85,8 @@ def get_image_from_url_or_path(image_source: str, cache_dir: str= "tmp/downloade
         else:
             response = requests.get(image_source)
             image = cv2.imdecode(
-                np.frombuffer(BytesIO(response.content).read(), np.uint8), cv2.IMREAD_COLOR
+                np.frombuffer(BytesIO(response.content).read(), np.uint8),
+                cv2.IMREAD_COLOR,
             )
             if image is not None:
                 cv2.imwrite(cache_path, image)
@@ -112,7 +116,12 @@ def get_image_from_url_or_path(image_source: str, cache_dir: str= "tmp/downloade
     return image
 
 
-def main(imagePathOrUrl="test/fixtures/noise.avif", crop: bool = False, output_dir: str = "tmp/pre-process", jobId: str = "default_job"):
+def main(
+    imagePathOrUrl="test/fixtures/noise.avif",
+    crop: bool = False,
+    output_dir: str = "tmp/pre-process",
+    jobId: str = "default_job",
+):
     image = get_image_from_url_or_path(imagePathOrUrl)
     basename = os.path.splitext(os.path.basename(imagePathOrUrl))[0] + ".png"
 
@@ -154,10 +163,10 @@ def main(imagePathOrUrl="test/fixtures/noise.avif", crop: bool = False, output_d
         height, width = image.shape[:2]
         crops = [
             ("full", image),
-            ("top_half", image[:height // 2, :]),
-            ("bottom_half", image[height // 2:, :]),
-            ("left_half", image[:, :width // 2]),
-            ("right_half", image[:, width // 2:]),
+            ("top_half", image[: height // 2, :]),
+            ("bottom_half", image[height // 2 :, :]),
+            ("left_half", image[:, : width // 2]),
+            ("right_half", image[:, width // 2 :]),
         ]
         crops_dir = os.path.join(output_dir, "crops")
         os.makedirs(crops_dir, exist_ok=True)
@@ -174,7 +183,7 @@ def main(imagePathOrUrl="test/fixtures/noise.avif", crop: bool = False, output_d
         CYAN = Fore.CYAN
         RESET = Style.RESET_ALL
     except ImportError:
-        GREEN = CYAN = RESET = ''
+        GREEN = CYAN = RESET = ""
     log_path = get_job_log_path(jobId)
     print(f"Log for job {GREEN}{jobId}{RESET} saved to {CYAN}{log_path}{RESET}")
 
@@ -200,8 +209,8 @@ if __name__ == "__main__":
         help="Directory to save processed images and crops",
     )
     parser.add_argument(
-        '-id',
-        '--jobId',
+        "-id",
+        "--jobId",
         default="default_job",
         help="Unique identifier for the job, used for logging",
     )
@@ -213,5 +222,5 @@ if __name__ == "__main__":
         imagePathOrUrl=args.image,
         crop=args.crop,
         output_dir=args.output_dir,
-        jobId=args.jobId
+        jobId=args.jobId,
     )

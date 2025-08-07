@@ -30,7 +30,7 @@ def unique_hash(text_or_image: Union[str, Image.Image]) -> str:
 def split_image(
     image: Union[str, Image.Image],
     mode: str = "quarters",  # "quarters" (default) or "halves"
-    output_dir: str = "tmp/crop"
+    output_dir: str = "tmp/crop",
 ) -> tuple[Image.Image | None, list[Image.Image], list[str]]:
     """
     Split image (from path or PIL.Image) into 4 quarters or 2 left/right halves.
@@ -120,7 +120,9 @@ def split_image(
         return None, [], []
 
 
-def dewarp_image(image: Union[str, Image.Image, np.ndarray]) -> tuple[Image.Image, str] | None:
+def dewarp_image(
+    image: Union[str, Image.Image, np.ndarray],
+) -> tuple[Image.Image, str] | None:
     """
     Attempt to dewarp an image using perspective transform.
     Accepts a file path, PIL Image, or numpy ndarray. Returns the dewarped image as a PIL Image object and output path.

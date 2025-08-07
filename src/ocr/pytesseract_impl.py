@@ -3,13 +3,20 @@ import os
 import pytesseract
 from PIL import Image
 from proxy_hunter import write_file
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from src.ocr.image_utils import dewarp_image
-from src.database.VoucherDatabase import extract_voucher_codes, get_database_instance, safe_print, store_voucher_in_database
+from src.database.VoucherDatabase import (
+    extract_voucher_codes,
+    get_database_instance,
+    safe_print,
+    store_voucher_in_database,
+)
 from src.utils.file import get_relative_path
 
-def extract_text_from_image(image_path, lang='eng'):
+
+def extract_text_from_image(image_path, lang="eng"):
     """
     Extract text from an image using Tesseract OCR.
     :param image_path: Path to the image file.
@@ -38,6 +45,7 @@ def extract_text_from_image(image_path, lang='eng'):
         return "\n".join(merged)
     return original_tesseract
 
+
 def split_and_extract_text_from_image(image_path: str) -> str:
     """
     Split the image into quarters and extract text from each part.
@@ -52,8 +60,8 @@ def split_and_extract_text_from_image(image_path: str) -> str:
         safe_print("❌\tDewarping failed, using original image.")
     width, height = img.size
     halves = [
-        img.crop((0, 0, width // 2, height)),        # Left half
-        img.crop((width // 2, 0, width, height))     # Right half
+        img.crop((0, 0, width // 2, height)),  # Left half
+        img.crop((width // 2, 0, width, height)),  # Right half
     ]
 
     all_text = []
@@ -66,6 +74,7 @@ def split_and_extract_text_from_image(image_path: str) -> str:
             all_text.append(text)
 
     return "\n".join(all_text)
+
 
 if __name__ == "__main__":
     voucher_path = "test/fixtures/voucher-fix.jpeg"

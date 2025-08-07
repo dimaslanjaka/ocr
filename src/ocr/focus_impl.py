@@ -5,11 +5,18 @@ from PIL import Image
 import cv2
 import numpy as np
 from proxy_hunter import write_file
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from src.database.VoucherDatabase import extract_voucher_codes, get_database_instance, safe_print, store_voucher_in_database
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+
+from src.database.VoucherDatabase import (
+    extract_voucher_codes,
+    get_database_instance,
+    safe_print,
+    store_voucher_in_database,
+)
 from src.utils.file import get_relative_path
 from src.ocr.image_utils import dewarp_image
+
 
 def preprocess_image_for_ocr(image_path: str) -> Image.Image:
     """
@@ -30,7 +37,7 @@ def preprocess_image_for_ocr(image_path: str) -> Image.Image:
     gray = cv2.equalizeHist(gray)
 
     # Sharpen image
-    kernel = np.array([[0, -1, 0], [-1, 5,-1], [0, -1, 0]])
+    kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
     sharp = cv2.filter2D(gray, -1, kernel)
 
     # Try Otsu's thresholding
@@ -42,6 +49,7 @@ def preprocess_image_for_ocr(image_path: str) -> Image.Image:
     # Convert back to PIL Image
     pil_img = Image.fromarray(denoised)
     return pil_img
+
 
 def focus_extract_text_from_image(image_path: str) -> str:
     """
@@ -67,7 +75,7 @@ def focus_extract_text_from_image(image_path: str) -> str:
         ("right_half", img.crop((width // 2, 0, width, height))),
     ]
 
-    reader = easyocr.Reader(['en'], gpu=False)
+    reader = easyocr.Reader(["en"], gpu=False)
     all_text = []
     for name, crop_img in crops:
         crop_path = get_relative_path("tmp/split", f"{name}.png")
@@ -79,9 +87,10 @@ def focus_extract_text_from_image(image_path: str) -> str:
         text = "\n".join(str(r) for r in result if isinstance(r, str))
         if text:
             all_text.append(text)
-            write_file(crop_path.replace('.png', '.txt'), text)
+            write_file(crop_path.replace(".png", ".txt"), text)
 
     return "\n".join(all_text)
+
 
 if __name__ == "__main__":
     voucher_path = "test/fixtures/voucher-fix.jpeg"

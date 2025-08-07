@@ -36,6 +36,19 @@ jobs:
           corepack enable
           corepack prepare yarn@stable --activate
 
+      - name: Cache build outputs
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            tmp
+            dist
+            public/js
+            public/css
+          key: ${{ runner.os }}-build-${{ hashFiles('yarn.lock', 'package.json', 'tsconfig.json', 'babel.config.js') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+
       - name: Install dependencies
         run: yarn install
 

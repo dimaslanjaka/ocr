@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OCR Pre-Process Example</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/3.4.3/tailwind.min.css" rel="stylesheet" />
+    <!-- Flowbite CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+    <!-- Tesseract.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/tesseract.min.js"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-col items-center py-8">
+    <div class="w-full max-w-6xl px-4">
+      <div class="mb-6 flex flex-col items-center w-full">
+        <label for="uploader" class="block mb-2 text-lg font-medium text-gray-700">Upload Image</label>
+        <div class="flex items-center gap-4 w-full">
+          <input
+            type="file"
+            id="uploader"
+            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
+        </div>
+        <div class="flex items-center mt-2">
+          <input
+            id="cameraCheckbox"
+            type="checkbox"
+            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" />
+          <label for="cameraCheckbox" class="ml-2 text-sm text-gray-700 select-none">Use camera (mobile only)</label>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="flex flex-col items-center">
+          <p class="mb-2 font-semibold">Input Image</p>
+          <img id="imgInput" class="max-w-full max-h-64 rounded shadow border" />
+        </div>
+        <div class="flex flex-col items-center">
+          <p class="mb-2 font-semibold">Rotated, Original Color</p>
+          <img id="imgOriginal" class="max-w-full max-h-64 rounded shadow border" />
+        </div>
+        <div class="flex flex-col items-center">
+          <p class="mb-2 font-semibold">Rotated, Grey</p>
+          <img id="imgGrey" class="max-w-full max-h-64 rounded shadow border" />
+        </div>
+        <div class="flex flex-col items-center">
+          <p class="mb-2 font-semibold">Rotated, Binary</p>
+          <img id="imgBinary" class="max-w-full max-h-64 rounded shadow border" />
+        </div>
+      </div>
+      <div class="mt-8">
+        <div class="w-full mb-6">
+          <div id="progressStatus" class="text-xs text-gray-600 mb-1">Idle</div>
+          <div class="w-full bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+            <div
+              id="progressBar"
+              class="bg-blue-600 h-4 rounded-full transition-all duration-300"
+              style="width: 0%"></div>
+          </div>
+        </div>
+        <label class="block mb-2 text-lg font-medium text-gray-700">OCR Result</label>
+        <pre
+          class="bg-white p-4 rounded shadow border overflow-x-auto"><code id="result" class="whitespace-pre-wrap"></code></pre>
+      </div>
+    </div>
+    <!-- Flowbite JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <script>
+      const uploader = document.getElementById('uploader');
+      const cameraCheckbox = document.getElementById('cameraCheckbox');
+
+      // Toggle file input to use camera capture on mobile
+      cameraCheckbox.addEventListener('change', function () {
+        if (cameraCheckbox.checked) {
+          uploader.setAttribute('accept', 'image/*');
+          uploader.setAttribute('capture', 'environment');
+        } else {
+          uploader.removeAttribute('accept');
+          uploader.removeAttribute('capture');
+        }
+      });
+
+      const progressBar = document.getElementById('progressBar');
+      const progressStatus = document.getElementById('progressStatus');
+
+      const recognize = async ({ target: { files } }) => {
+        document.getElementById('imgInput').src = URL.createObjectURL(files[0]);
+        progressBar.style.width = '0%';
+        progressStatus.textContent = 'Starting...';
+        const worker = await Tesseract.createWorker('eng', 1, {
+          workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@5.0.4/dist/worker.min.js',
+          logger: function (m) {
+            if (typeof m.progress === 'number') {
+              const percent = Math.round(m.progress * 100);
+              if (m.status) {
+                progressStatus.textContent = m.status.charAt(0).toUpperCase() + m.status.slice(1) + ` (${percent}%)`;
+              } else {
+                progressStatus.textContent = `${percent}%`;
+              }
+              progressBar.style.width = percent + '%';
+            } else if (m.status) {
+              progressStatus.textContent = m.status.charAt(0).toUpperCase() + m.status.slice(1);
+            }
+          }
+        });
+        const ret = await worker.recognize(
+          files[0],
+          { rotateAuto: true },
+          { imageColor: true, imageGrey: true, imageBinary: true }
+        );
+        progressBar.style.width = '100%';
+        progressStatus.textContent = 'Done (100%)';
+        document.getElementById('imgOriginal').src = ret.data.imageColor;
+        document.getElementById('imgGrey').src = ret.data.imageGrey;
+        document.getElementById('imgBinary').src = ret.data.imageBinary;
+        document.getElementById('result').innerHTML = ret.data.text;
+        setTimeout(() => {
+          progressBar.style.width = '0%';
+          progressStatus.textContent = 'Idle';
+        }, 800);
+      };
+      uploader.addEventListener('change', recognize);
+    </script>
+  </body>
+</html>

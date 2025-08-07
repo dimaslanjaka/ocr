@@ -55,6 +55,13 @@ jobs:
       - name: Build project
         run: yarn build
 
+      - name: Check for symlinks in public
+        run: |
+          find public -type l -ls || true
+
+      - name: Check public directory size
+        run: du -sh public || true
+
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v4
         with:

@@ -1,0 +1,116 @@
+// Video container and video element for fixed aspect ratio and fill
+.ocr-video-container {
+  width: 320px;
+  height: 240px;
+}
+.ocr-video-el {
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  object-fit: cover;
+}
+.ocr-video-placeholder {
+  z-index: 1;
+}
+// Ensure video and preview image have the same fit and size
+.ocr-video-preview {
+  object-fit: contain !important;
+  background: #000;
+}
+.ocr-img-preview {
+  object-fit: contain !important;
+  background: #000;
+}
+// OCR Web Live - Bottom Navigation Bar
+.ocr-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 -2px 16px 0 rgba(0, 0, 0, 0.08);
+  padding: 0.5rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  min-width: 0;
+  max-width: 100vw;
+  @media (max-width: 640px) {
+    padding: 0.25rem 0;
+  }
+}
+.ocr-bottom-bar-inner {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  justify-content: space-between;
+  @media (max-width: 640px) {
+    gap: 0.5rem;
+    max-width: 100vw;
+    padding: 0 0.5rem;
+  }
+}
+.ocr-bottom-bar-item {
+  background: none;
+  border: none;
+  outline: none;
+  color: #374151;
+  font-size: 1.25rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s,
+    color 0.2s;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  @media (max-width: 640px) {
+    padding: 0.5rem 0.5rem;
+    font-size: 1.1rem;
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+.ocr-bottom-bar-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ocr-btn-start {
+  color: #16a34a;
+}
+.ocr-btn-capture {
+  color: #2563eb;
+}
+.ocr-btn-stop {
+  color: #dc2626;
+}
+.ocr-btn-submit {
+  color: #2563eb;
+  background: #e0e7ff;
+  border: 1px solid #2563eb;
+  font-weight: bold;
+  @media (max-width: 640px) {
+    background: #e0e7ff;
+    border: 1px solid #2563eb;
+  }
+}
+.ocr-camera-select {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #374151;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+  min-width: 80px;
+  @media (max-width: 640px) {
+    min-width: 60px;
+    font-size: 0.95rem;
+  }
+}

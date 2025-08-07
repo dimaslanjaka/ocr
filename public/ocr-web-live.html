@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OCR App - Camera</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://rawcdn.githack.com/dimaslanjaka/Web-Manajemen/0f634f242ff259087c9fe176e8f28ccaebb5c015/css/all.min.css" />
+    <link rel="stylesheet" href="css/ocr-web-live.css" />
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <div class="w-full min-h-screen grid grid-cols-1 md:grid-cols-5 gap-8 items-center justify-center mx-auto mt-8">
+      <div class="bg-white rounded-lg shadow-md p-6 flex flex-col md:col-span-2">
+        <h2 class="text-2xl font-bold mb-4 text-center">OCR SAMPLE</h2>
+        <form id="form" action="javascript:void(0)" class="space-y-4">
+          <div class="flex flex-col items-center">
+            <div class="relative mb-4 ocr-video-container">
+              <video
+                id="video"
+                playsinline
+                class="rounded-lg shadow bg-black absolute top-0 left-0 ocr-video-el"></video>
+              <div
+                id="video-placeholder"
+                class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-gray-200 rounded-lg shadow ocr-video-placeholder">
+                <i class="fal fa-video fa-3x text-gray-400 mb-2"></i>
+                <span class="text-gray-500">Camera preview</span>
+              </div>
+            </div>
+            <canvas id="canvas" width="320" height="240" class="hidden"></canvas>
+            <!-- Camera controls fixed bottom nav -->
+            <div class="ocr-bottom-bar">
+              <div class="ocr-bottom-bar-inner">
+                <label for="camera-select" class="ocr-bottom-bar-item">
+                  <i class="fal fa-camera-web fa-lg"></i>
+                  <span class="sr-only">Select Camera</span>
+                  <select id="camera-select" class="ocr-camera-select">
+                    <option value="">Loading...</option>
+                  </select>
+                </label>
+                <button id="start-camera" type="button" class="ocr-bottom-bar-item ocr-btn-start" title="Start Camera">
+                  <i class="fal fa-play fa-lg"></i>
+                  <span class="sr-only">Start Camera</span>
+                </button>
+                <button id="capture" type="button" class="ocr-bottom-bar-item ocr-btn-capture" title="Capture" disabled>
+                  <i class="fal fa-camera fa-lg"></i>
+                  <span class="sr-only">Capture</span>
+                </button>
+                <button
+                  id="stop-camera"
+                  type="button"
+                  class="ocr-bottom-bar-item ocr-btn-stop"
+                  title="Stop Camera"
+                  disabled>
+                  <i class="fal fa-video-slash fa-lg"></i>
+                  <span class="sr-only">Stop Camera</span>
+                </button>
+                <button id="ocr-submit" type="submit" class="ocr-bottom-bar-item ocr-btn-submit">
+                  <i class="fal fa-file-search fa-lg"></i>
+                  <span class="sr-only">Submit</span>
+                </button>
+              </div>
+            </div>
+            <img
+              id="form-image-preview"
+              class="hidden mt-4 max-w-full rounded shadow"
+              alt="Preview"
+              width="320"
+              height="240" />
+          </div>
+          <div>
+            <select
+              class="form-select block w-full mt-1 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              id="lang">
+              <option value="eng">English</option>
+              <option value="ind">Indonesia</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="bg-white rounded-lg shadow-md p-6 flex flex-col md:col-span-3">
+        <h3 class="text-lg font-semibold mb-2 text-center">Progress</h3>
+        <div id="progress" class="w-full"></div>
+        <div id="result" class="mt-4 text-gray-700 whitespace-pre-line pb-24"></div>
+      </div>
+    </div>
+  </body>
+  <!-- <script src='//cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script> -->
+  <script src="//cdn.rawgit.com/naptha/tesseract.js/0.2.0/dist/tesseract.js"></script>
+  <script src="js/ocr-web-live.global.js"></script>
+  <script src="https://rawcdn.githack.com/dimaslanjaka/jquery-form-saver/38176c68300c834d6692953a1be7407caed01832/dist/release/autosave.js"></script>
+</html>

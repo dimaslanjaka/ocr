@@ -29,6 +29,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'yarn'
+          cache-dependency-path: 'package.json'
 
       - name: Install corepack (for Yarn Berry)
         run: |

@@ -64,10 +64,11 @@ ICON = "public/favicon.ico"
 if IS_DOCKER:
     PYTHON_CMD = "python"
 elif not ISWIN:
-    PYTHON_CMD = f"{__dirname}/py"
+    PYTHON_CMD = f"{__dirname}/ppy"
 else:
-    PYTHON_CMD = f"{__dirname}/py.cmd"
+    PYTHON_CMD = f"{__dirname}/ppy.cmd"
 release_dir = os.path.normpath(os.path.join(__dirname, "../releases"))
+
 
 def _log_info(msg):
     sys.stdout.write(f"[INFO] {msg}\n")

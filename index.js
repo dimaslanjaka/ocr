@@ -13,6 +13,8 @@ import { WebSocketServer } from 'ws';
 import { collectRouter } from './src/routes/collect.js';
 import { uploadRoute } from './src/routes/upload.js';
 import { urlOcrRoute } from './src/routes/url.js';
+import { getChecksum } from 'sbg-utility';
+import { spawnAsync } from 'cross-spawn';
 
 // ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -176,6 +178,19 @@ app.get('/live', (req, res) => {
 app.get('/url', urlOcrRoute);
 app.router.use('/collect', collectRouter);
 uploadRoute(app);
+app.get('/build', async (req, res) => {
+  // Get checksum src folder
+  const srcFolder = path.join(__dirname, 'src');
+  const checksum = getChecksum(srcFolder);
+  const lastChecksumFile = path.join(__dirname, 'tmp/last_checksum.txt');
+  const lastChecksum = fs.existsSync(lastChecksumFile) ? fs.readFileSync(lastChecksumFile, 'utf-8') : null;
+  if (checksum !== lastChecksum) {
+    fs.writeFileSync(lastChecksumFile, checksum);
+    await spawnAsync('npm', ['run', 'build'], { stdio: 'inherit', cwd: __dirname });
+    console.log('New checksum generated:', checksum);
+  }
+  res.json({ checksum });
+});
 
 // Start server
 const PORT = 8080;

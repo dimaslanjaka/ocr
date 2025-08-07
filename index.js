@@ -186,7 +186,7 @@ app.get('/build', async (req, res) => {
   const lastChecksum = fs.existsSync(lastChecksumFile) ? fs.readFileSync(lastChecksumFile, 'utf-8') : null;
   if (checksum !== lastChecksum) {
     fs.writeFileSync(lastChecksumFile, checksum);
-    await spawnAsync('npm', ['run', 'build'], { stdio: 'inherit', cwd: __dirname });
+    spawnAsync('npm', ['run', 'build'], { stdio: 'inherit', cwd: __dirname });
     console.log('New checksum generated:', checksum);
   }
   res.json({ checksum });
